@@ -1526,6 +1526,95 @@
         border-top: 1px solid var(--line);
         flex-wrap: wrap;
       }
+      .tool-grants {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+        min-width: 0;
+      }
+      .tool-grants legend {
+        font-size: 13px;
+        font-weight: 750;
+        padding: 0 6px;
+      }
+      .tool-grant {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .tool-grant:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+      .tool-grant input {
+        width: 20px;
+        height: 20px;
+        min-height: 20px;
+        flex: 0 0 20px;
+        accent-color: var(--blue);
+        margin-top: 2px;
+      }
+      .tool-grant span {
+        min-width: 0;
+      }
+      .tool-grant strong {
+        font-size: 12px;
+        overflow-wrap: anywhere;
+      }
+      .tool-grant small {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 5px;
+        line-height: 1.5;
+      }
+      .tool-grant:has(input:disabled) {
+        cursor: default;
+        opacity: 0.65;
+      }
+      .event {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .event > div {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      .event strong {
+        font-size: 12px;
+      }
+      .event p {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.65;
+        margin-top: 5px;
+        white-space: pre-wrap;
+      }
+      .event small {
+        display: block;
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 7px;
+      }
+      .event-dot {
+        display: grid;
+        place-items: center;
+        flex: 0 0 30px;
+        height: 30px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        color: var(--blue);
+      }
+      .event-dot svg {
+        width: 15px;
+        height: 15px;
+      }
       .form-error {
         padding: 12px 14px;
         background: #fff1f3;
@@ -2923,6 +3012,8 @@
             id: "tr-demo-" + String(64 - i).padStart(3, "0"),
             ts,
             project: pr.id,
+            budgetScope: pr.budget,
+            budgetAttribution: "sample",
             principal: pr.owner,
             kind: tool ? "tool" : "model",
             target: tool ? "claims.read" : i % 4 ? "Chat Pro" : "Chat Economy",
@@ -3016,6 +3107,31 @@
               "Primary Chat Pro; fallback Chat Economy. Both India deployments.",
           },
         ];
+        return normalizeState(s);
+      }
+      function defaultAgentTools(s, project) {
+        return s.tools
+          .filter(
+            (t) =>
+              t.status !== "Blocked" &&
+              (t.action === "READ" ||
+                (t.action === "UPDATE" && project === "finance")),
+          )
+          .map((t) => t.id);
+      }
+      function normalizeState(s) {
+        for (const t of s.traces) {
+          if (!Object.hasOwn(t, "budgetScope")) {
+            t.budgetScope =
+              s.projects.find((p) => p.id === t.project)?.budget || null;
+            t.budgetAttribution = "legacy-binding";
+          }
+        }
+        for (const a of s.agents) {
+          if (!Array.isArray(a.allowedTools))
+            a.allowedTools = defaultAgentTools(s, a.project);
+        }
+        for (const i of s.incidents) if (!Array.isArray(i.notes)) i.notes = [];
         return s;
       }
       function loadState() {
@@ -3041,7 +3157,7 @@
             raw.policy &&
             raw.settings
           )
-            return raw;
+            return normalizeState(raw);
         } catch (_) {}
         return seed();
       }
@@ -3180,7 +3296,7 @@
         const ids = descendants(id);
         return round(
           state.traces
-            .filter((t) => ids.has(byId(state.projects, t.project)?.budget))
+            .filter((t) => ids.has(t.budgetScope))
             .reduce((n, t) => n + t.cost, 0),
         );
       }
@@ -3253,7 +3369,7 @@
     <div class="brand row"><span class="logo-mark">${logoMark()}</span><div><div class="brand-name">NeuralFence</div><div class="brand-sub">Intelligence, secured</div></div><button class="icon-button nav-close" data-action="close-nav" aria-label="Close navigation">${icon("close")}</button></div>
     <div class="workspace-chip"><span class="avatar">AF</span><div><strong>Acme Financial</strong><br><span class="small">Demo workspace · India</span></div></div>
     <nav>${navs.map(([group, items]) => `<div class="nav-group-label">${group}</div>${items.map(([id, label, i]) => `<button class="nav-button ${ui.page === id ? "active" : ""}" data-action="navigate" data-page="${id}" ${ui.page === id ? 'aria-current="page"' : ""}>${icon(i)}<span>${label}</span>${id === "incidents" && openIncidents().length ? `<span class="nav-count">${openIncidents().length}</span>` : ""}${id === "governance" && pendingApprovals().length ? `<span class="nav-count">${pendingApprovals().length}</span>` : ""}</button>`).join("")}`).join("")}</nav>
-    <div class="sidebar-bottom"><div class="sidebar-note"><h3>Take it for a test drive</h3><p>Explore nine connected journeys across your AI workspace.</p>${btn("Explore workflows " + icon("arrow"), "guide")}</div><div class="sidebar-footer"><span class="dot"></span>PROTOTYPE <span style="margin-left:auto">v0.2</span></div></div>`;
+    <div class="sidebar-bottom"><div class="sidebar-note"><h3>Take it for a test drive</h3><p>Explore nine connected journeys across your AI workspace.</p>${btn("Explore workflows " + icon("arrow"), "guide")}</div><div class="sidebar-footer"><span class="dot"></span>PROTOTYPE <span style="margin-left:auto">v0.3</span></div></div>`;
         const label = navs
           .flatMap((n) => n[1])
           .find((n) => n[0] === ui.page)?.[1];
@@ -3908,7 +4024,9 @@
           list = state.incidents.filter(
             (i) =>
               (ui.filter === "All" || i.status === ui.filter) &&
-              (i.title + " " + i.id + " " + i.source).toLowerCase().includes(q),
+              (i.title + " " + i.id + " " + i.source + " " + i.owner)
+                .toLowerCase()
+                .includes(q),
           );
         return (
           pageHead(
@@ -3916,7 +4034,7 @@
             "Investigate a decision, follow the evidence and contain the affected agent.",
             btn(icon("download") + " Export findings", "export-incidents"),
           ) +
-          searchToolbar("Search incidents, sources or IDs…", [
+          searchToolbar("Search incidents, sources, owners or IDs…", [
             "All",
             "Open",
             "Resolved",
@@ -4090,7 +4208,7 @@
         modal(
           "Runtime trace",
           e(t.id),
-          `<div class="row between">${badge(t.decision)}<span class="small muted">${date(t.ts)} · ${time(t.ts)}</span></div><dl class="info-grid gap"><div><dt>Application</dt><dd>${e(projectName(t.project))}</dd></div><div><dt>Principal</dt><dd>${e(t.principal)}</dd></div><div><dt>Target</dt><dd>${e(t.target)}</dd></div><div><dt>Policy version</dt><dd>Enterprise baseline v${t.policyVersion}</dd></div><div><dt>Recorded cost</dt><dd class="num">${money(t.cost)}</dd></div><div><dt>Token usage</dt><dd class="num">${amount(t.tokens)}</dd></div><div><dt>Workflow</dt><dd class="mono small">${e(t.workflow || "sample-workflow")}</dd></div><div><dt>Provider / tool called</dt><dd>${t.executed ? "Yes, simulated" : "No"}</dd></div></dl><div class="divider"></div><h3 style="margin-bottom:17px">Decision timeline</h3>${stages.map((s) => `<div class="result-stage"><span class="stage-check ${s.status === "stop" ? "stop" : s.status === "wait" ? "wait" : ""}">${s.status === "stop" ? "×" : s.status === "wait" ? "…" : "✓"}</span><div><strong>${e(s.name)}</strong><p>${e(s.detail)}</p></div></div>`).join("")}<h3>Redacted evidence preview</h3><pre class="code">${e(t.preview || "Metadata only")}</pre><p class="small muted">Sample evidence is stored locally. Production signing, retention and external exports are not connected.</p><div class="dialog-actions">${btn("Export trace", "export-trace", "", `data-id="${id}"`)}${t.approvalId ? btn("View approval", "approval", "primary", `data-id="${t.approvalId}"`) : btn("Done", "close-modal", "primary")}</div>`,
+          `<div class="row between">${badge(t.decision)}<span class="small muted">${date(t.ts)} · ${time(t.ts)}</span></div><dl class="info-grid gap"><div><dt>Application</dt><dd>${e(projectName(t.project))}</dd></div><div><dt>Principal</dt><dd>${e(t.principal)}</dd></div><div><dt>Target</dt><dd>${e(t.target)}</dd></div><div><dt>Policy version</dt><dd>Enterprise baseline v${t.policyVersion}</dd></div><div><dt>Recorded cost</dt><dd class="num">${money(t.cost)}</dd></div><div><dt>Charged budget scope</dt><dd>${e(byId(state.budgets, t.budgetScope)?.name || "Unassigned")}${t.budgetAttribution === "legacy-binding" ? '<p class="small muted">Recovered from the saved application binding.</p>' : ""}</dd></div><div><dt>Token usage</dt><dd class="num">${amount(t.tokens)}</dd></div><div><dt>Workflow</dt><dd class="mono small">${e(t.workflow || "sample-workflow")}</dd></div><div><dt>Provider / tool called</dt><dd>${t.executed ? "Yes, simulated" : "No"}</dd></div></dl><div class="divider"></div><h3 style="margin-bottom:17px">Decision timeline</h3>${stages.map((s) => `<div class="result-stage"><span class="stage-check ${s.status === "stop" ? "stop" : s.status === "wait" ? "wait" : ""}">${s.status === "stop" ? "×" : s.status === "wait" ? "…" : "✓"}</span><div><strong>${e(s.name)}</strong><p>${e(s.detail)}</p></div></div>`).join("")}<h3>Redacted evidence preview</h3><pre class="code">${e(t.preview || "Metadata only")}</pre><p class="small muted">Sample evidence is stored locally. Production signing, retention and external exports are not connected.</p><div class="dialog-actions">${btn("Export trace", "export-trace", "", `data-id="${id}"`)}${t.approvalId ? btn("View approval", "approval", "primary", `data-id="${t.approvalId}"`) : btn("Done", "close-modal", "primary")}</div>`,
           false,
           true,
         );
@@ -4121,12 +4239,11 @@
       function projectDialog(id) {
         const p = byId(state.projects, id);
         if (!p) return;
-        const own = ui.role !== "Developer" || p.owner === "Priya Shah",
-          edit = can("projects") && own;
+        const edit = projectWritable(p);
         modal(
           e(p.name),
           "Application access, routing and cost controls",
-          `<div class="row between">${badge(p.status)}<span class="small muted">Owner · ${e(p.owner)}</span></div><dl class="info-grid gap"><div><dt>Route</dt><dd>${e(byId(state.routes, p.route)?.name)}</dd></div><div><dt>Policy</dt><dd>Enterprise baseline v${state.policy.version}</dd></div><div><dt>Budget scope</dt><dd>${e(byId(state.budgets, p.budget)?.name)}</dd></div><div><dt>Available spend</dt><dd>${money(budgetRemaining(p.budget))}</dd></div></dl><div class="divider"></div><h3>Sample virtual credential</h3><pre class="code">${edit ? e(p.key) : "nf_demo_••••••••••••••"}</pre><p class="small muted">Illustrative key, valid only as a sample object in this prototype.</p><div class="row wrap gap">${btn(icon("copy") + " Copy demo key", "copy-key", "", `data-id="${id}" ${edit ? "" : "disabled"}`)}${btn("Rotate key", "rotate-key", "", `data-id="${id}" ${edit ? "" : "disabled"}`)}</div><div class="dialog-actions">${btn(p.status === "Active" ? "Pause access" : "Resume access", "toggle-project", p.status === "Active" ? "danger" : "", `data-id="${id}" ${edit ? "" : "disabled"}`)}${btn("Run a sample request", "test-project", "primary", `data-id="${id}" ${restricted("run")}`)}</div>`,
+          `<div class="row between">${badge(p.status)}<span class="small muted">Owner · ${e(p.owner)}</span></div><dl class="info-grid gap"><div><dt>Route</dt><dd>${e(byId(state.routes, p.route)?.name)}</dd></div><div><dt>Policy</dt><dd>Enterprise baseline v${state.policy.version}</dd></div><div><dt>Budget scope</dt><dd>${e(byId(state.budgets, p.budget)?.name)}</dd></div><div><dt>Available spend</dt><dd>${money(budgetRemaining(p.budget))}</dd></div></dl><div class="divider"></div><h3>Sample virtual credential</h3><pre class="code">${edit ? e(p.key) : "nf_demo_••••••••••••••"}</pre><p class="small muted">Illustrative key, valid only as a sample object in this prototype.</p><div class="row wrap gap">${btn(icon("copy") + " Copy demo key", "copy-key", "", `data-id="${id}" ${edit ? "" : "disabled"}`)}${btn("Rotate key", "rotate-key", "", `data-id="${id}" ${edit ? "" : "disabled"}`)}</div><div class="dialog-actions">${btn("Edit application", "edit-project", "", `data-id="${id}" ${edit ? "" : "disabled"}`)}${btn(p.status === "Active" ? "Pause access" : "Resume access", "toggle-project", p.status === "Active" ? "danger" : "", `data-id="${id}" ${edit ? "" : "disabled"}`)}${btn("Run a sample request", "test-project", "primary", `data-id="${id}" ${restricted("run")}`)}</div>`,
           false,
           true,
         );
@@ -4137,7 +4254,7 @@
         modal(
           e(a.name),
           "Identity, purpose and delegated access",
-          `<div class="row between">${badge(a.status)}<span class="small muted">${e(a.owner)}</span></div><p class="gap small">${e(a.purpose)}</p><dl class="info-grid gap"><div><dt>Application</dt><dd>${e(projectName(a.project))}</dd></div><div><dt>Budget available</dt><dd>${money(budgetRemaining(byId(state.projects, a.project)?.budget))}</dd></div><div><dt>Current demo workflow</dt><dd>${a.stepsUsed || 0} of ${a.maxSteps} execution steps</dd></div><div><dt>Policy</dt><dd>Enterprise baseline v${state.policy.version}</dd></div></dl><div class="divider"></div><h3>Identity lineage</h3><div class="node-path gap"><span>Human</span>${icon("chevron")}<span>${e(projectName(a.project))}</span>${icon("chevron")}<span>Agent</span>${icon("chevron")}<span>Tool</span></div><div class="divider"></div><h3>Tool permission boundaries</h3>${state.tools.map((t) => `<div class="health-row"><div><strong class="mono">${e(t.name)}</strong><p class="small muted">${t.action} · ${e(t.scope)}</p></div>${badge(t.status, t.status === "Approval required" ? "amber" : undefined)}</div>`).join("")}<p class="small muted gap">Every tool still requires a scope match. Financial writes need an exact, single-use approval.</p><div class="dialog-actions">${btn(a.status === "Active" ? "Suspend agent" : "Resume agent", "toggle-agent", a.status === "Active" ? "danger" : "", `data-id="${id}" ${restricted("contain")}`)}${btn("Test tool access", "test-agent", "primary", `data-id="${id}" ${restricted("run")}`)}</div>`,
+          `<div class="row between">${badge(a.status)}<span class="small muted">${e(a.owner)}</span></div><p class="gap small">${e(a.purpose)}</p><dl class="info-grid gap"><div><dt>Application</dt><dd>${e(projectName(a.project))}</dd></div><div><dt>Budget available</dt><dd>${money(budgetRemaining(byId(state.projects, a.project)?.budget))}</dd></div><div><dt>Current demo workflow</dt><dd>${a.stepsUsed || 0} of ${a.maxSteps} execution steps</dd></div><div><dt>Policy</dt><dd>Enterprise baseline v${state.policy.version}</dd></div></dl><div class="divider"></div><h3>Identity lineage</h3><div class="node-path gap"><span>Human</span>${icon("chevron")}<span>${e(projectName(a.project))}</span>${icon("chevron")}<span>Agent</span>${icon("chevron")}<span>Tool</span></div><div class="divider"></div><h3>Tool permission boundaries</h3>${state.tools.map((t) => `<div class="health-row"><div><strong class="mono">${e(t.name)}</strong><p class="small muted">${t.action} · ${e(t.scope)}</p></div>${badge(t.status === "Blocked" ? "Blocked" : a.allowedTools.includes(t.id) ? t.status : "Not granted", t.status === "Approval required" && a.allowedTools.includes(t.id) ? "amber" : undefined)}</div>`).join("")}<p class="small muted gap">Every tool still requires a scope match. Financial writes need an exact, single-use approval.</p><div class="dialog-actions">${btn("Edit agent", "edit-agent", "", `data-id="${id}" ${agentWritable(a) ? "" : "disabled"}`)}${btn(a.status === "Active" ? "Suspend agent" : "Resume agent", "toggle-agent", a.status === "Active" ? "danger" : "", `data-id="${id}" ${restricted("contain")}`)}${btn("Test tool access", "test-agent", "primary", `data-id="${id}" ${restricted("run")}`)}</div>`,
           false,
           true,
         );
@@ -4171,12 +4288,93 @@
       function incidentDialog(id) {
         const i = byId(state.incidents, id);
         if (!i) return;
+        const ag = byId(state.agents, i.agent),
+          trace = byId(state.traces, i.trace),
+          edit = can("contain");
+        const event = (title, detail, meta, symbol = "file") =>
+          `<div class="event"><span class="event-dot">${icon(symbol)}</span><div><strong>${e(title)}</strong><p>${e(detail)}</p>${meta ? `<small>${e(meta)}</small>` : ""}</div></div>`;
         modal(
           e(i.title),
           `${e(i.id)} · ${e(i.source)}`,
-          `<div class="row between">${badge(i.severity)}${badge(i.status)}</div><p class="small gap">${e(i.reason)}</p><dl class="info-grid gap"><div><dt>Owner</dt><dd>${e(i.owner)}</dd></div><div><dt>Observed</dt><dd>${date(i.ts)} ${time(i.ts)}</dd></div><div><dt>Related agent</dt><dd>${e(byId(state.agents, i.agent)?.name || "Workforce user")}</dd></div><div><dt>Agent state</dt><dd>${i.agent ? badge(byId(state.agents, i.agent)?.status) : "Not applicable"}</dd></div></dl><div class="divider"></div><h3>Evidence & response timeline</h3><div class="event"><span class="event-dot">${icon("alert")}</span><div><strong>Finding recorded</strong><p>${e(i.reason)}</p></div></div><div class="event"><span class="event-dot">${icon("shield")}</span><div><strong>Enforcement evidence linked</strong><p>${e(i.trace)}</p></div></div>${i.notes.map((n) => `<div class="event"><span class="event-dot">${icon("file")}</span><div><strong>Response action</strong><p>${e(n)}</p></div></div>`).join("")}<div class="gap">${btn("Inspect related trace", "trace", "", `data-id="${i.trace}"`)}</div>${i.status !== "Resolved" ? `<div class="gap">${field("Investigation note", "incident-note", `<textarea id="incident-note" rows="3" maxlength="800" placeholder="Record the investigation or resolution."></textarea>`)}</div>` : ""}<div class="dialog-actions">${i.agent ? btn(byId(state.agents, i.agent)?.status === "Suspended" ? "Agent suspended" : "Contain agent", "contain-incident", "danger", `data-id="${id}" ${can("contain") && byId(state.agents, i.agent)?.status !== "Suspended" ? "" : "disabled"}`) : ""}${i.status !== "Resolved" ? btn("Resolve incident", "resolve-incident", "primary", `data-id="${id}" ${restricted("contain")}`) : btn("Done", "close-modal", "primary")}</div>`,
+          `<div class="row between">${badge(i.severity)}${badge(i.status)}</div><p class="small gap">${e(i.reason)}</p>
+          <dl class="info-grid gap"><div><dt>Owner</dt><dd>${e(i.owner)}</dd></div><div><dt>Observed</dt><dd>${date(i.ts)} ${time(i.ts)}</dd></div><div><dt>Related identity</dt><dd>${e(ag?.name || (i.source === "Workforce AI" ? "Workforce user" : trace?.principal || "Application request"))}</dd></div><div><dt>Agent state</dt><dd>${ag ? badge(ag.status) : "Not applicable"}</dd></div></dl>
+          <div class="divider"></div><h3>Evidence & response timeline</h3>
+          ${event("Finding recorded", i.reason, date(i.ts) + " · " + time(i.ts), "alert")}
+          ${event(trace ? "Enforcement evidence linked" : "Source evidence", i.trace || "Source metadata only", "", "shield")}
+          ${i.notes.map((n) => (typeof n === "string" ? event("Response action", n, "") : event(n.kind, n.text, date(n.ts) + " · " + time(n.ts) + " · " + n.actor))).join("")}
+          <div class="row wrap gap">${trace ? btn("Inspect related trace", "trace", "", `data-id="${e(i.trace)}"`) : ""}${btn(icon("download") + " Export evidence", "export-incident", "", `data-id="${e(id)}"`)}</div>
+          ${
+            edit
+              ? `<form class="gap" data-form="incident-save" data-id="${e(id)}"><div class="divider"></div><h3>Review & response</h3><div class="stack gap">
+            ${field("Assigned owner", "incident-owner", input("incident-owner", i.owner, "text", 'required maxlength="60"'))}
+            ${field(i.status === "Resolved" ? "Follow-up or reopening reason" : "Investigation note", "incident-note", '<textarea id="incident-note" name="incident-note" rows="3" maxlength="800" placeholder="Record findings, next steps or the reason for a status change."></textarea>')}
+          </div><p class="field-help gap">Save the assignment or note as you investigate. Resolving or reopening requires a reason.</p><div class="dialog-actions">
+            ${ag ? btn(ag.status === "Suspended" ? "Agent suspended" : "Contain agent", "contain-incident", "danger", `data-id="${e(id)}" ${ag.status === "Suspended" ? "disabled" : ""}`) : ""}
+            <button type="submit" class="button">Save review</button>
+            ${btn(i.status === "Resolved" ? "Reopen incident" : "Resolve incident", i.status === "Resolved" ? "reopen-incident" : "resolve-incident", "primary", `data-id="${e(id)}"`)}
+          </div></form>`
+              : `<div class="gap">${notice("Security admin review", "Preview the reviewer role to assign an owner, record notes or change this incident's status.")}</div><div class="dialog-actions">${btn("Preview as Security admin", "preview-incident-reviewer", "primary", `data-id="${e(id)}"`)}</div>`
+          }`,
           false,
           true,
+        );
+      }
+      function incidentNote(i, kind, text) {
+        i.notes.push({ kind, text, actor: actor(), ts: Date.now() });
+        i.updatedAt = Date.now();
+      }
+      function updateIncident(id, action = "save") {
+        if (!requireCap("contain")) return;
+        const i = byId(state.incidents, id);
+        if (!i) return;
+        const owner = document.getElementById("incident-owner")?.value.trim(),
+          note = document.getElementById("incident-note")?.value.trim();
+        if (!owner || owner.length > 60)
+          return formError("Enter an assigned owner of up to 60 characters.");
+        if ((note || "").length > 800)
+          return formError("Keep the review note within 800 characters.");
+        if (action !== "save" && !note)
+          return formError(
+            action === "resolve"
+              ? "Add an investigation note before resolving."
+              : "Add a reason before reopening.",
+          );
+        if (
+          (action === "resolve" && i.status === "Resolved") ||
+          (action === "reopen" && i.status !== "Resolved")
+        )
+          return formError("This incident's status has already changed.");
+        if (action === "save" && owner === i.owner && !note)
+          return formError(
+            "Change the owner or add a note to save your review.",
+          );
+        if (owner !== i.owner) {
+          incidentNote(i, "Owner assigned", i.owner + " → " + owner);
+          i.owner = owner;
+          audit("Assigned " + i.id, owner);
+        }
+        if (note) {
+          const label =
+            action === "resolve"
+              ? "Resolved"
+              : action === "reopen"
+                ? "Reopened"
+                : "Investigation note";
+          incidentNote(i, label, note);
+          audit(label + " · " + i.id, note);
+        }
+        if (action === "resolve") i.status = "Resolved";
+        if (action === "reopen") i.status = "Open";
+        save();
+        closeModal();
+        render();
+        if (action !== "resolve") incidentDialog(id);
+        toast(
+          action === "resolve"
+            ? "Incident resolved with an audit entry."
+            : action === "reopen"
+              ? "Incident reopened. Agent containment is retained."
+              : "Review saved with an audit entry.",
         );
       }
       function providerWizard(step = 0, preserve = false) {
@@ -4214,48 +4412,82 @@
           bars + body,
         );
       }
-      function newProject() {
+      function newProject(id = "") {
         if (!requireCap("projects")) return;
+        const prior = byId(state.projects, id);
+        if (id && (!prior || !projectWritable(prior))) return;
+        const p = prior || {
+          name: "",
+          owner: ui.role === "Developer" ? "Priya Shah" : "",
+          route: state.routes[0]?.id,
+          budget: "b-claims",
+        };
         modal(
-          "Create governed application",
+          prior ? "Edit application" : "Create governed application",
           "Bind access, route and budget in one place.",
-          `<form data-form="project-create"><div class="form-grid"><div class="span2">${field("Application name", "project-name", input("project-name", "", "text", 'required maxlength="70" placeholder="e.g. Underwriting copilot"'))}</div>${field("Owner", "project-owner", input("project-owner", ui.role === "Developer" ? "Priya Shah" : "", "text", `required maxlength="60" ${ui.role === "Developer" ? "readonly" : ""}`))}${field(
-            "Route",
-            "project-route",
-            select(
+          `<form data-form="${prior ? "project-edit" : "project-create"}" data-id="${e(id)}"><div class="form-grid">
+            <div class="span2">${field("Application name", "project-name", input("project-name", p.name, "text", 'required maxlength="70" placeholder="e.g. Underwriting copilot"'))}</div>
+            ${field("Owner", "project-owner", input("project-owner", p.owner, "text", `required maxlength="60" ${ui.role === "Developer" ? "readonly" : ""}`))}
+            ${field(
+              "Route",
               "project-route",
-              state.routes.map((r) => [r.id, r.name]),
-              state.routes[0]?.id,
-            ),
-          )}${field(
-            "Budget scope",
-            "project-budget",
-            select(
+              select(
+                "project-route",
+                state.routes.map((r) => [r.id, r.name]),
+                p.route,
+              ),
+            )}
+            ${field(
+              "Budget scope",
               "project-budget",
-              state.budgets.filter((b) => b.parent).map((b) => [b.id, b.name]),
-              "b-claims",
-            ),
-          )}${field("Guardrail policy", "project-policy", input("project-policy", "Enterprise baseline v" + state.policy.version, "text", "readonly"))}</div><p class="field-help gap">A sample virtual credential will be created. The selected budget is shared by applications bound to that scope.</p>${formActions("Create application")}</form>`,
+              select(
+                "project-budget",
+                state.budgets
+                  .filter((b) => b.parent || b.id === p.budget)
+                  .map((b) => [b.id, b.name]),
+                p.budget,
+              ),
+            )}
+            ${field("Guardrail policy", "project-policy", input("project-policy", "Enterprise baseline v" + state.policy.version, "text", "readonly"))}
+          </div><p class="field-help gap">${prior ? "Changes apply to future requests. Historical spend stays with its recorded budget. Access changes cancel outstanding approvals for this application's agents; the sample credential is retained." : "A sample virtual credential will be created. The selected budget is shared by applications bound to that scope."}</p>${formActions(prior ? "Save application" : "Create application")}</form>`,
         );
       }
-      function newAgent() {
+      function newAgent(id = "") {
         if (!requireCap("projects")) return;
+        const prior = byId(state.agents, id);
+        if (id && (!prior || !agentWritable(prior))) return;
+        const a = prior || {
+          name: "",
+          owner: ui.role === "Developer" ? "Priya Shah" : "",
+          project: ui.simProject,
+          purpose: "",
+          maxSteps: 12,
+          allowedTools: state.tools
+            .filter((t) => t.action === "READ" && t.status !== "Blocked")
+            .map((t) => t.id),
+        };
         modal(
-          "Register agent",
-          "Declare a purpose and assign an accountable owner.",
-          `<form data-form="agent-create"><div class="form-grid"><div class="span2">${field("Agent name", "agent-name", input("agent-name", "", "text", 'required maxlength="70"'))}</div>${field("Owner", "agent-owner", input("agent-owner", ui.role === "Developer" ? "Priya Shah" : "", "text", `required maxlength="60" ${ui.role === "Developer" ? "readonly" : ""}`))}${field(
-            "Application & budget",
-            "agent-project",
-            select(
+          prior ? "Edit agent" : "Register agent",
+          "Declare a purpose, accountable owner and permitted tools.",
+          `<form data-form="${prior ? "agent-edit" : "agent-create"}" data-id="${e(id)}"><div class="form-grid">
+            <div class="span2">${field("Agent name", "agent-name", input("agent-name", a.name, "text", 'required maxlength="70"'))}</div>
+            ${field("Owner", "agent-owner", input("agent-owner", a.owner, "text", `required maxlength="60" ${ui.role === "Developer" ? "readonly" : ""}`))}
+            ${field(
+              "Application & budget",
               "agent-project",
-              state.projects
-                .filter(
-                  (p) => ui.role !== "Developer" || p.owner === "Priya Shah",
-                )
-                .map((p) => [p.id, p.name]),
-              ui.simProject,
-            ),
-          )}<div class="span2">${field("Declared purpose", "agent-purpose", `<textarea id="agent-purpose" name="agent-purpose" rows="3" required maxlength="300" placeholder="What may this agent do, and for whom?"></textarea>`)}</div>${field("Maximum workflow steps", "agent-steps", input("agent-steps", 12, "number", 'min="1" max="100" required'))}</div>${formActions("Register agent")}</form>`,
+              select(
+                "agent-project",
+                state.projects
+                  .filter(projectWritable)
+                  .map((p) => [p.id, p.name]),
+                a.project,
+              ),
+            )}
+            <div class="span2">${field("Declared purpose", "agent-purpose", `<textarea id="agent-purpose" name="agent-purpose" rows="3" required maxlength="300" placeholder="What may this agent do, and for whom?">${e(a.purpose)}</textarea>`)}</div>
+            ${field("Maximum workflow steps", "agent-steps", input("agent-steps", a.maxSteps, "number", 'min="1" max="100" required'))}
+          </div><fieldset class="tool-grants gap"><legend>Permitted tools</legend><p class="field-help">Select the tools this agent may request. An empty selection denies all tools. Resource boundaries and financial approval still apply.</p>
+            ${state.tools.map((t) => `<label class="tool-grant"><input type="checkbox" name="agent-tools" value="${e(t.id)}" ${a.allowedTools.includes(t.id) && t.status !== "Blocked" ? "checked" : ""} ${t.status === "Blocked" ? "disabled" : ""}><span><strong class="mono">${e(t.name)}</strong><small>${e(t.action)} · ${e(t.scope)} · ${e(t.status === "Blocked" ? "Blocked by baseline" : t.status)}</small></span></label>`).join("")}
+          </fieldset>${prior ? '<p class="field-help gap">Changes to ownership, purpose, application, tools or step limit start a fresh workflow and cancel outstanding approvals. Existing trace evidence is retained.</p>' : ""}${formActions(prior ? "Save agent" : "Register agent")}</form>`,
         );
       }
       function routeEditor(id) {
@@ -4528,6 +4760,8 @@
           id: uid("tr"),
           ts: Date.now(),
           project: project?.id || "",
+          budgetScope: project?.budget || null,
+          budgetAttribution: "request",
           principal: actor(),
           kind,
           target: "Not selected",
@@ -4764,7 +4998,10 @@
             "Agent or application access is suspended",
             "Identity & delegation",
           );
-        if (ui.role === "Developer" && a.owner !== "Priya Shah")
+        if (
+          ui.role === "Developer" &&
+          (a.owner !== "Priya Shah" || p.owner !== "Priya Shah")
+        )
           return deny(
             t,
             "This agent is outside the developer’s scope",
@@ -4791,6 +5028,12 @@
           return deny(
             t,
             "Destructive tool execution is denied by the baseline",
+            "Tool authorization",
+          );
+        if (!a.allowedTools.includes(tool.id))
+          return deny(
+            t,
+            "This tool is not granted to the agent",
             "Tool authorization",
           );
         const check = inspectText(JSON.stringify(args));
@@ -5069,9 +5312,38 @@
       }
       function projectWritable(p) {
         return (
+          !!p &&
           can("projects") &&
           (ui.role !== "Developer" || p.owner === "Priya Shah")
         );
+      }
+      function agentWritable(a) {
+        return (
+          !!a &&
+          projectWritable(byId(state.projects, a.project)) &&
+          (ui.role !== "Developer" || a.owner === "Priya Shah")
+        );
+      }
+      function invalidateAgentWorkflow(a, reason) {
+        let cancelled = 0;
+        for (const ap of state.approvals) {
+          if (
+            ap.agent === a.id &&
+            ["Pending", "Approved"].includes(ap.status)
+          ) {
+            ap.status = "Cancelled";
+            ap.reason = reason;
+            ap.cancelledAt = Date.now();
+            cancelled++;
+          }
+        }
+        a.workflow = uid("wf");
+        a.stepsUsed = 0;
+        if (cancelled)
+          audit(
+            "Cancelled outstanding approvals",
+            a.name + " · " + cancelled + " · " + reason,
+          );
       }
       document.addEventListener("submit", (event) => {
         const form = event.target.closest("form[data-form]");
@@ -5125,70 +5397,166 @@
             }
             return;
           }
-          case "project-create": {
+          case "project-create":
+          case "project-edit": {
             if (!requireCap("projects")) return;
+            const editing = form.dataset.form === "project-edit",
+              prior = byId(state.projects, form.dataset.id);
+            if (editing && !projectWritable(prior))
+              return formError("This application is outside your scope.");
             const name = val("project-name");
             if (
               state.projects.some(
-                (p) => p.name.toLowerCase() === name.toLowerCase(),
+                (p) =>
+                  p.id !== prior?.id &&
+                  p.name.toLowerCase() === name.toLowerCase(),
               )
             )
               return formError("An application with that name already exists.");
-            const p = {
-              id: uid("app"),
+            const values = {
               name,
               owner:
                 ui.role === "Developer" ? "Priya Shah" : val("project-owner"),
               route: val("project-route"),
               budget: val("project-budget"),
+            };
+            if (
+              !byId(state.routes, values.route) ||
+              !byId(state.budgets, values.budget)
+            )
+              return formError("Select an existing route and budget.");
+            const p = prior || {
+              id: uid("app"),
               status: "Active",
               key: "nf_demo_" + Math.random().toString(36).slice(2, 14),
             };
-            if (!byId(state.routes, p.route) || !byId(state.budgets, p.budget))
-              return formError("Select an existing route and budget.");
-            state.projects.push(p);
+            const changes = Object.keys(values).filter(
+              (k) => values[k] !== p[k],
+            );
+            if (prior && !changes.length)
+              return formError("Change a field before saving.");
+            if (prior && changes.some((k) => k !== "name"))
+              state.agents
+                .filter((a) => a.project === p.id)
+                .forEach((a) =>
+                  invalidateAgentWorkflow(
+                    a,
+                    "Application access binding changed",
+                  ),
+                );
+            Object.assign(p, values);
+            if (!prior) state.projects.push(p);
             audit(
-              "Created governed application",
-              name +
+              prior
+                ? "Updated governed application"
+                : "Created governed application",
+              p.name +
                 " · " +
                 byId(state.routes, p.route).name +
                 " · " +
-                byId(state.budgets, p.budget).name,
+                byId(state.budgets, p.budget).name +
+                (prior ? " · Changed: " + changes.join(", ") : ""),
             );
             save();
             go("gateway", "Applications & keys");
             projectDialog(p.id);
-            toast("Application and sample credential created.");
+            toast(
+              prior
+                ? "Application updated. Historical budget charges are retained."
+                : "Application and sample credential created.",
+            );
             return;
           }
-          case "agent-create": {
+          case "agent-create":
+          case "agent-edit": {
             if (!requireCap("projects")) return;
+            const editing = form.dataset.form === "agent-edit",
+              prior = byId(state.agents, form.dataset.id);
+            if (editing && !agentWritable(prior))
+              return formError("This agent is outside your scope.");
             if (
               state.agents.some(
-                (a) => a.name.toLowerCase() === val("agent-name").toLowerCase(),
+                (a) =>
+                  a.id !== prior?.id &&
+                  a.name.toLowerCase() === val("agent-name").toLowerCase(),
               )
             )
               return formError("An agent with that name already exists.");
             const p = byId(state.projects, val("agent-project"));
-            if (!p || !projectWritable(p))
+            if (!projectWritable(p))
               return formError("Select an application within your scope.");
-            state.agents.push({
-              id: uid("agent"),
+            const allowedTools = [
+              ...new Set(fd.getAll("agent-tools").map(String)),
+            ].sort();
+            if (
+              allowedTools.some((id) => {
+                const t = byId(state.tools, id);
+                return (
+                  !t ||
+                  t.status === "Blocked" ||
+                  (t.action === "UPDATE" && p.id !== "finance")
+                );
+              })
+            )
+              return formError(
+                "Financial tools require the Finance application. Blocked tools cannot be granted.",
+              );
+            const maxSteps = n("agent-steps");
+            if (!Number.isInteger(maxSteps) || maxSteps < 1 || maxSteps > 100)
+              return formError("Choose a workflow limit from 1 to 100 steps.");
+            const values = {
               name: val("agent-name"),
               owner:
                 ui.role === "Developer" ? "Priya Shah" : val("agent-owner"),
               purpose: val("agent-purpose"),
               project: p.id,
+              maxSteps,
+              allowedTools,
+            };
+            const ag = prior || {
+              id: uid("agent"),
               status: "Active",
-              maxSteps: n("agent-steps"),
               stepsUsed: 0,
-            });
-            audit("Registered agent", val("agent-name") + " · " + p.name);
+            };
+            const changes = Object.keys(values).filter(
+              (k) =>
+                canonical(values[k]) !==
+                canonical(
+                  k === "allowedTools"
+                    ? [...(ag[k] || [])].sort()
+                    : (ag[k] ?? ""),
+                ),
+            );
+            if (prior && !changes.length)
+              return formError("Change a field before saving.");
+            if (prior && changes.some((k) => k !== "name"))
+              invalidateAgentWorkflow(
+                ag,
+                "Agent access or workflow configuration changed",
+              );
+            Object.assign(ag, values);
+            if (!prior) state.agents.push(ag);
+            audit(
+              prior ? "Updated agent" : "Registered agent",
+              ag.name +
+                " · " +
+                p.name +
+                " · Tools: " +
+                (allowedTools.join(", ") || "none") +
+                (prior ? " · Changed: " + changes.join(", ") : ""),
+            );
             save();
             go("agents", "Agents");
-            toast("Agent registered with owner, purpose and budget.");
+            if (prior) agentDialog(ag.id);
+            toast(
+              prior
+                ? "Agent updated. New calls use the saved permissions."
+                : "Agent registered with owner, purpose and tool permissions.",
+            );
             return;
           }
+          case "incident-save":
+            return updateIncident(form.dataset.id);
           case "route-save": {
             if (!requireCap("routes")) return;
             const id = form.dataset.id,
@@ -5450,8 +5818,12 @@
             return providerWizard();
           case "new-project":
             return newProject();
+          case "edit-project":
+            return newProject(id);
           case "new-agent":
             return newAgent();
+          case "edit-agent":
+            return newAgent(id);
           case "new-route":
             return routeEditor();
           case "edit-route":
@@ -5556,6 +5928,8 @@
             if (!requireCap("contain")) return;
             const ag = byId(state.agents, id);
             ag.status = ag.status === "Active" ? "Suspended" : "Active";
+            if (ag.status === "Suspended")
+              invalidateAgentWorkflow(ag, "Agent suspended");
             audit("Changed agent state", ag.name + " → " + ag.status);
             save();
             closeModal();
@@ -5670,8 +6044,14 @@
             const i = byId(state.incidents, id),
               ag = byId(state.agents, i.agent);
             ag.status = "Suspended";
-            i.notes.push(
-              "Agent suspended by " + actor() + ". Further calls are denied.",
+            invalidateAgentWorkflow(
+              ag,
+              "Agent contained during incident review",
+            );
+            incidentNote(
+              i,
+              "Agent contained",
+              "Agent suspended. Further calls are denied.",
             );
             audit("Contained agent", ag.name + " · " + i.id);
             save();
@@ -5680,20 +6060,35 @@
             toast("Agent contained.");
             return;
           }
-          case "resolve-incident": {
-            if (!requireCap("contain")) return;
-            const note = document.getElementById("incident-note")?.value.trim();
-            if (!note)
-              return formError("Add an investigation note before resolving.");
-            const i = byId(state.incidents, id);
-            i.status = "Resolved";
-            i.notes.push(actor() + ": " + note);
-            audit("Resolved " + i.id, note);
-            save();
-            closeModal();
+          case "resolve-incident":
+            return updateIncident(id, "resolve");
+          case "reopen-incident":
+            return updateIncident(id, "reopen");
+          case "preview-incident-reviewer":
+            ui.role = "Security admin";
             render();
-            toast("Incident resolved with an audit entry.");
-            return;
+            return incidentDialog(id);
+          case "export-incident": {
+            const incident = byId(state.incidents, id);
+            if (!incident) return;
+            const agent = byId(state.agents, incident.agent);
+            return download("neuralfence-incident-" + id + ".json", {
+              prototype: true,
+              exportedAt: new Date().toISOString(),
+              incident,
+              trace: byId(state.traces, incident.trace) || null,
+              agent: agent
+                ? {
+                    id: agent.id,
+                    name: agent.name,
+                    status: agent.status,
+                    project: agent.project,
+                  }
+                : null,
+              audit: state.audit.filter(
+                (a) => a.event.includes(id) || a.detail.includes(id),
+              ),
+            });
           }
           case "run-assurance":
             return runAssurance();
@@ -5744,6 +6139,8 @@
                   id,
                   ts,
                   project,
+                  budgetScope,
+                  budgetAttribution,
                   kind,
                   target,
                   decision,
@@ -5753,6 +6150,8 @@
                   id,
                   ts,
                   project,
+                  budgetScope,
+                  budgetAttribution,
                   kind,
                   target,
                   decision,
@@ -5800,16 +6199,15 @@
           case "new-workflow": {
             if (!requireCap("run")) return;
             const ag = byId(state.agents, ui.simAgent);
-            const old = ag.workflow;
-            ag.workflow = uid("wf");
-            ag.stepsUsed = 0;
-            state.approvals
-              .filter(
-                (x) =>
-                  x.workflow === old &&
-                  ["Pending", "Approved"].includes(x.status),
-              )
-              .forEach((x) => (x.status = "Cancelled"));
+            const p = byId(state.projects, ag?.project);
+            if (
+              !ag ||
+              !p ||
+              (ui.role === "Developer" &&
+                (ag.owner !== "Priya Shah" || p.owner !== "Priya Shah"))
+            )
+              return toast("This agent is outside your scope.", "lock");
+            invalidateAgentWorkflow(ag, "A new demo workflow was started");
             audit("Started new demo workflow", ag.name);
             ui.lastTool = null;
             save();

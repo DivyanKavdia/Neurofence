@@ -8,7 +8,9 @@ Working HTML wireframe for the enterprise AI trust workspace in this repository,
 
 **[Open NeuralFence](https://divyankavdia.github.io/Neurofence/)** on desktop or mobile.
 
-The v0.2 experience introduces a neural shield logo, graphite and mint colors, embedded Manrope typography, actionable dashboard metrics, and nine guided journeys. On mobile, a bottom navigation bar, labeled data cards and review sheets make the same workflows usable by touch.
+The interface uses a neural shield logo, graphite and mint colors, embedded Manrope typography, actionable dashboard metrics, and nine guided journeys. On mobile, a bottom navigation bar, labeled data cards and review sheets make the same workflows usable by touch.
+
+Version 0.3 adds application editing, agent tool permissions and a complete incident review loop. Edit existing records, verify the next request uses the new configuration, assign findings, save investigation notes, resolve or reopen incidents, and export the linked evidence.
 
 Use **Explore workflows** to choose a journey and its demo role. Screen links are shareable, and browser back/forward navigation restores the selected view.
 
@@ -53,10 +55,14 @@ Pushes to `main` publish automatically. Check the **pages build and deployment**
 | Human tool approval | Agents & MCP → Tool playground | Request `vendor.updateBankAccount` as Platform admin. Switch to Security admin to approve it with a reason, then explicitly rerun the exact request. |
 | Policy lifecycle | Guardrails → Policy builder | As Security admin, save a draft, test it in Simulator, publish it and restore an earlier configuration. |
 | Budget enforcement | FinOps → Budget hierarchy | Lower the workspace or application hard limit and rerun a request. Every applicable parent budget is checked. |
-| Incident response | Incidents | As Security admin, inspect a finding, contain its agent and record a resolution note. |
+| Application lifecycle | AI gateway → Applications & keys | Open an application and select **Edit application**. Update its name, owner, route or budget, then run a new request. Historical spend stays with its recorded budget. |
+| Agent permissions | Agents & MCP → Agents | Open an agent and select **Edit agent**. Change its purpose, application, step limit and permitted tools. Remove a grant and verify that the next call is denied. |
+| Incident response | Incidents | As Security admin, assign an owner and **Save review** to record notes. Contain its agent, resolve with a reason, reopen for follow-up, and **Export evidence**. |
 | Evidence | AI gateway → Traces; Governance → Audit trail | Follow the recorded decisions and export JSON evidence. |
 
-The role selector is a **role preview**. Pending or denied tool requests stop before execution. Approvals are tied to the exact agent, tool, arguments, workflow and policy version, and are consumed once. Publishing a policy invalidates outstanding approvals.
+The role selector is a **role preview**. Pending or denied tool requests stop before execution. Approvals are tied to the exact agent, tool, arguments, workflow and policy version, and are consumed once. Publishing a policy invalidates outstanding approvals. Changes to agent access, application access bindings or agent containment also cancel unused approvals and start a new demo workflow.
+
+Platform admins edit applications and agents. Developers edit their own agents within their own applications. Security admins review incidents and control containment; Auditors inspect and export evidence. An agent with no selected tools cannot execute any tool. Global blocks and financial resource restrictions still apply to selected tools. Reopening an incident retains the agent's containment state.
 
 Changes are stored in the browser's local storage. Use **Reset demo** to restore the sample state. Different devices, browsers and web addresses keep separate demo data.
 
@@ -68,11 +74,15 @@ The prototype contains 10 navigation areas and 26 main page/tab views, plus work
 - [Mobile tool approval](docs/screenshots/mobile-tool-approval.jpg)
 - [Command center](docs/screenshots/command-center.jpg)
 - [Mobile command center](docs/screenshots/mobile-command-center.jpg)
+- [Application editor](docs/screenshots/application-editor.jpg)
+- [Agent permissions editor](docs/screenshots/agent-editor.jpg)
+- [Incident review](docs/screenshots/incident-review.jpg)
+- [Mobile incident review](docs/screenshots/mobile-incident-review.jpg)
 - [Logo and brand assets](assets/brand/README.md)
 
 ## Browser checks
 
-The two browser suites cover navigation, role restrictions, model decisions, scope checks, approval consumption, policy publication and rollback, budgets, containment, exports and persistence. Extended journeys also cover creating and pausing providers, routing fallback, credential rotation, agent registration and workflow caps, settings, workforce controls, review sheets and browser history.
+The three browser suites cover navigation, role restrictions, model decisions, scope checks, approval consumption, policy publication and rollback, budgets, containment, exports and persistence. Extended journeys cover creating and pausing providers, routing fallback, credential rotation, agent registration and workflow caps, settings, workforce controls, review sheets and browser history. Lifecycle checks cover saved-data migration, editing, historical budget attribution, permission revocation, cancellation of stale approvals, incident assignment, notes, resolution, reopening and linked evidence export.
 
 Layout checks exercise all 26 views at 320px, 390px, 768px and 1440px. Mobile checks use touch emulation; they do not replace testing on physical iOS and Android devices.
 
@@ -96,6 +106,7 @@ To use an already installed Chromium executable, set `NEUROFENCE_BROWSER_PATH`. 
 | `.nojekyll` | Direct static publishing on GitHub Pages |
 | `tests/prototype.cjs` | Portable browser regression checks |
 | `tests/experience.cjs` | Connected creation/editing journeys, history and responsive layout checks |
+| `tests/lifecycle.cjs` | Application/agent editing, data migration, permission changes and incident review |
 | `assets/brand/` | Reusable SVG marks, outlined wordmarks, embedded font source and license |
 | `docs/screenshots/` | Selected desktop and mobile JPG previews |
 | `package.json`, `package-lock.json` | Development test dependency and commands |
@@ -104,4 +115,4 @@ To use an already installed Chromium executable, set `NEUROFENCE_BROWSER_PATH`. 
 
 This is a browser prototype using synthetic data and deterministic example checks. Provider responses, tool execution, credentials, role authorization, budget reservations and audit evidence are simulated. There is no backend, production detector, live provider connection, signed audit store or server-side retention enforcement.
 
-The existing browser storage key is retained across the visual update, preserving saved demo records. Use **Reset demo** to begin from the original fixture.
+The existing browser storage key is retained, preserving saved demo records. The v0.3 update adds explicit tool grants to older agents. New requests record their budget scope at request time. Older traces without a saved budget scope are attributed once using their saved application's current binding and are labeled accordingly in trace details and exports; earlier budget changes cannot be reconstructed. Use **Reset demo** to begin from the original fixture.
