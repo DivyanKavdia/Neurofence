@@ -6,6 +6,8 @@ Working HTML wireframe for the enterprise AI trust workspace in this repository,
 
 ## Open the prototype
 
+GitHub Pages address, once enabled: **[Open NeuralFence](https://divyankavdia.github.io/Neurofence/)**. The same link works on desktop and mobile.
+
 Download or clone this repository, then open **`index.html`** in a browser. The application has no build step, runtime dependencies or external network calls.
 
 ```bash
@@ -23,13 +25,28 @@ Open <http://localhost:8000>. The GitHub repository view displays source code; i
 
 ## Test on a phone
 
-On your computer, run the server from this repository:
+Once GitHub Pages is enabled, open **<https://divyankavdia.github.io/Neurofence/>** in Safari or Chrome on your phone. No local server is needed for the hosted version.
+
+For local development, run the server from this repository on your computer:
 
 ```bash
 python3 -m http.server 8000 --bind 0.0.0.0
 ```
 
 Connect the phone to the same Wi-Fi, then open `http://COMPUTER-IP:8000` in Safari or Chrome. Replace `COMPUTER-IP` with your computer's local Wi-Fi IP address. Keep the server running while testing; press Ctrl+C to stop it. On Windows, use `py -3` if `python3` is unavailable.
+
+## Publish on GitHub Pages
+
+The repository is prepared for direct static publishing from **`main` → `/ (root)`**. The root `index.html` is the application entry point; `.nojekyll` lets Pages serve the files without a Jekyll build.
+
+One-time repository setup:
+
+1. Open [Settings → Pages](https://github.com/DivyanKavdia/Neurofence/settings/pages).
+2. Under **Build and deployment → Source**, select **Deploy from a branch**.
+3. Choose **main** and **/ (root)**, then click **Save**.
+4. Wait for the **pages build and deployment** run in [Actions](https://github.com/DivyanKavdia/Neurofence/actions) to succeed, then open [the prototype](https://divyankavdia.github.io/Neurofence/).
+
+Subsequent pushes to `main` publish automatically. See [GitHub's publishing-source instructions](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site) for the settings flow.
 
 ## Try the connected workflows
 
@@ -75,6 +92,7 @@ To use an already installed Chromium executable, set `NEUROFENCE_BROWSER_PATH`. 
 | Path | Purpose |
 | --- | --- |
 | `index.html` | Complete responsive app, inline styles, demo state and interaction handlers |
+| `.nojekyll` | Direct static publishing on GitHub Pages |
 | `tests/prototype.cjs` | Portable browser regression checks |
 | `docs/screenshots/` | Selected desktop and mobile JPG previews |
 | `package.json`, `package-lock.json` | Development test dependency and commands |
@@ -83,4 +101,4 @@ To use an already installed Chromium executable, set `NEUROFENCE_BROWSER_PATH`. 
 
 This is a browser prototype using synthetic data and deterministic example checks. Provider responses, tool execution, credentials, role authorization, budget reservations and audit evidence are simulated. There is no backend, production detector, live provider connection, signed audit store or server-side retention enforcement.
 
-The repository provides the source and test baseline. A hosted deployment is a separate step; a live website is not enabled by this initial import.
+The repository includes the source, browser checks and Pages setup. Repository administrators enable the hosted site using the one-time settings step above.
