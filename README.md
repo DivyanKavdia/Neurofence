@@ -6,7 +6,11 @@ Working HTML wireframe for the enterprise AI trust workspace in this repository,
 
 ## Open the prototype
 
-GitHub Pages address, once enabled: **[Open NeuralFence](https://divyankavdia.github.io/Neurofence/)**. The same link works on desktop and mobile.
+**[Open NeuralFence](https://divyankavdia.github.io/Neurofence/)** on desktop or mobile.
+
+The v0.2 experience introduces a neural shield logo, graphite and mint colors, embedded Manrope typography, actionable dashboard metrics, and nine guided journeys. On mobile, a bottom navigation bar, labeled data cards and review sheets make the same workflows usable by touch.
+
+Use **Explore workflows** to choose a journey and its demo role. Screen links are shareable, and browser back/forward navigation restores the selected view.
 
 Download or clone this repository, then open **`index.html`** in a browser. The application has no build step, runtime dependencies or external network calls.
 
@@ -25,7 +29,7 @@ Open <http://localhost:8000>. The GitHub repository view displays source code; i
 
 ## Test on a phone
 
-Once GitHub Pages is enabled, open **<https://divyankavdia.github.io/Neurofence/>** in Safari or Chrome on your phone. No local server is needed for the hosted version.
+Open **<https://divyankavdia.github.io/Neurofence/>** in Safari or Chrome on your phone. Use **Home**, **Gateway**, **Agents**, **Review**, or **More** in the bottom navigation. No local server is needed for the hosted version.
 
 For local development, run the server from this repository on your computer:
 
@@ -37,16 +41,9 @@ Connect the phone to the same Wi-Fi, then open `http://COMPUTER-IP:8000` in Safa
 
 ## Publish on GitHub Pages
 
-The repository is prepared for direct static publishing from **`main` → `/ (root)`**. The root `index.html` is the application entry point; `.nojekyll` lets Pages serve the files without a Jekyll build.
+GitHub Pages publishes **`main` → `/ (root)`**. The root `index.html` is the application entry point; `.nojekyll` lets Pages serve the files without a Jekyll build.
 
-One-time repository setup:
-
-1. Open [Settings → Pages](https://github.com/DivyanKavdia/Neurofence/settings/pages).
-2. Under **Build and deployment → Source**, select **Deploy from a branch**.
-3. Choose **main** and **/ (root)**, then click **Save**.
-4. Wait for the **pages build and deployment** run in [Actions](https://github.com/DivyanKavdia/Neurofence/actions) to succeed, then open [the prototype](https://divyankavdia.github.io/Neurofence/).
-
-Subsequent pushes to `main` publish automatically. See [GitHub's publishing-source instructions](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site) for the settings flow.
+Pushes to `main` publish automatically. Check the **pages build and deployment** run in [Actions](https://github.com/DivyanKavdia/Neurofence/actions). Publishing configuration is available in [Settings → Pages](https://github.com/DivyanKavdia/Neurofence/settings/pages).
 
 ## Try the connected workflows
 
@@ -70,10 +67,14 @@ The prototype contains 10 navigation areas and 26 main page/tab views, plus work
 - [Model request playground](docs/screenshots/model-playground.jpg)
 - [Mobile tool approval](docs/screenshots/mobile-tool-approval.jpg)
 - [Command center](docs/screenshots/command-center.jpg)
+- [Mobile command center](docs/screenshots/mobile-command-center.jpg)
+- [Logo and brand assets](assets/brand/README.md)
 
 ## Browser checks
 
-The browser suite covers navigation, role restrictions, model decisions, scope checks, approval consumption, policy publication and rollback, budgets, containment, exports, persistence and mobile navigation.
+The two browser suites cover navigation, role restrictions, model decisions, scope checks, approval consumption, policy publication and rollback, budgets, containment, exports and persistence. Extended journeys also cover creating and pausing providers, routing fallback, credential rotation, agent registration and workflow caps, settings, workforce controls, review sheets and browser history.
+
+Layout checks exercise all 26 views at 320px, 390px, 768px and 1440px. Mobile checks use touch emulation; they do not replace testing on physical iOS and Android devices.
 
 Requires Node.js 20 or later:
 
@@ -94,6 +95,8 @@ To use an already installed Chromium executable, set `NEUROFENCE_BROWSER_PATH`. 
 | `index.html` | Complete responsive app, inline styles, demo state and interaction handlers |
 | `.nojekyll` | Direct static publishing on GitHub Pages |
 | `tests/prototype.cjs` | Portable browser regression checks |
+| `tests/experience.cjs` | Connected creation/editing journeys, history and responsive layout checks |
+| `assets/brand/` | Reusable SVG marks, outlined wordmarks, embedded font source and license |
 | `docs/screenshots/` | Selected desktop and mobile JPG previews |
 | `package.json`, `package-lock.json` | Development test dependency and commands |
 
@@ -101,4 +104,4 @@ To use an already installed Chromium executable, set `NEUROFENCE_BROWSER_PATH`. 
 
 This is a browser prototype using synthetic data and deterministic example checks. Provider responses, tool execution, credentials, role authorization, budget reservations and audit evidence are simulated. There is no backend, production detector, live provider connection, signed audit store or server-side retention enforcement.
 
-The repository includes the source, browser checks and Pages setup. Repository administrators enable the hosted site using the one-time settings step above.
+The existing browser storage key is retained across the visual update, preserving saved demo records. Use **Reset demo** to begin from the original fixture.

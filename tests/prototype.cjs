@@ -134,7 +134,7 @@ const check = (value, message) => { assert.ok(value, message); completed.push(me
   await page.setViewportSize({width:375,height:812});
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile playground fits a 375-pixel viewport');
   await page.screenshot({path:path.join(resultsDir, 'mobile-playground.png'),fullPage:true, animations:'disabled'});
-  await action('toggle-nav').click();await nav('overview');
+  await page.getByRole('button',{name:'Open navigation',exact:true}).click();await nav('overview');
   check(await page.evaluate(()=>!document.body.classList.contains('nav-open')),'Mobile navigation opens, changes screens and closes');
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile overview fits a 375-pixel viewport');
   await page.screenshot({path:path.join(resultsDir, 'mobile-overview.png'),fullPage:true, animations:'disabled'});

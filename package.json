@@ -1,10 +1,10 @@
 {
   "name": "neurofence-prototype",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "NeuralFence enterprise AI trust workspace HTML prototype",
   "scripts": {
-    "test": "node tests/prototype.cjs"
+    "test": "node tests/prototype.cjs && node tests/experience.cjs"
   },
   "engines": {
     "node": ">=20"
