@@ -44,3 +44,11 @@ await esbuild.build({
   target: "node22",
 });
 console.log("Built the static console and optional mock HTTP server.");
+await esbuild.build({
+  entryPoints: ["server/gateway.ts"],
+  bundle: true,
+  platform: "node",
+  format: "cjs",
+  outfile: ".runtime/gateway.cjs",
+  target: "node22",
+});

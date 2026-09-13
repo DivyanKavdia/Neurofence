@@ -13,6 +13,7 @@ const inputs = {
   cluster_name: output.cluster_name.value,
   runtime_role_arn: output.runtime_role_arn.value,
   clickhouse_secret_arn: output.application_secret_refs.value.clickhouse,
+  litellm_secret_arn: output.application_secret_refs.value["litellm-executor"],
   vpc_cidr: output.vpc_cidr.value,
 };
 writeFileSync(target, JSON.stringify(inputs, null, 2) + "\n", {

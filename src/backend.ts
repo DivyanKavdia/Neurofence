@@ -22,6 +22,7 @@ import {
 } from "./types";
 import { createState } from "./seed";
 import { budgetSpend, periodStart } from "./ledger";
+import { ProviderConnector, ProviderFailure } from "./provider";
 
 export interface Store {
   read(key: string): State | undefined;
@@ -209,9 +210,17 @@ function requireValue(ok: unknown, message: string, code = "VALIDATION") {
   if (!ok) throw new ApiError(422, code, message);
 }
 
-/** Stateful BFF simulator, used unchanged by the browser and optional HTTP server.
- * It never contacts a provider, sends invitations, scans a package or provisions cloud resources.
- */
+async function hash(value: string) {
+  const bytes = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(value),
+  );
+  return Array.from(new Uint8Array(bytes), (b) =>
+    b.toString(16).padStart(2, "0"),
+  ).join("");
+}
+
+/** Prototype control plane. Model execution may use an explicitly injected server connector. */
 export class MockBackend implements Transport {
   session = { ...initialSession };
   private queue = Promise.resolve();
@@ -219,6 +228,7 @@ export class MockBackend implements Transport {
   constructor(
     private store: Store = new MemoryStore(),
     private latency = 80,
+    private providerConnector?: ProviderConnector,
   ) {}
   setSession(session: Session) {
     this.session = { ...session };
@@ -234,7 +244,7 @@ export class MockBackend implements Transport {
     );
     return (await work) as Result<T>;
   }
-  private dispatch(request: Request, session: Session): Result {
+  private async dispatch(request: Request, session: Session): Promise<Result> {
     const method = request.method || "GET",
       body = request.body || {},
       url = new URL(request.path, "http://mock.local");
@@ -250,6 +260,19 @@ export class MockBackend implements Transport {
       this.store.read(key) || createState(undefined, session.tenant),
     );
     const correlationId = uid("request");
+    const persist = () => {
+      const saved = structuredClone(state);
+      if (!saved.settings.rawContent) {
+        for (const trace of saved.data.traces) {
+          if (!trace.modelRuntime || trace.modelRuntime === "mock") continue;
+          delete trace.content;
+          trace.preview = "Request content not retained";
+          trace.output = "Response content not retained";
+          trace.contentRetained = false;
+        }
+      }
+      this.store.write(key, saved);
+    };
     const permission = (cap: string) => {
       if (!can(session, cap))
         throw new ApiError(
@@ -275,7 +298,7 @@ export class MockBackend implements Transport {
     const done = (value: unknown, write = method !== "GET"): Result => {
       if (write) {
         state.revision++;
-        this.store.write(key, state);
+        persist();
       }
       return {
         data: structuredClone(value),
@@ -373,6 +396,8 @@ export class MockBackend implements Transport {
     this.completeJobs(state, audit);
     if (resource === "workspace" && method === "GET") {
       const scoped = structuredClone(state);
+      delete scoped.gatewayReceipts;
+      scoped.settings.modelRuntime = this.providerConnector?.mode || "mock";
       for (const c of collections) {
         scoped.data[c] = scoped.data[c].filter((r) => inScope(r, c));
         if (
@@ -407,14 +432,23 @@ export class MockBackend implements Transport {
       });
     if (resource === "health")
       return respond({
-        status: "Healthy",
-        mode: "mock",
-        dependencies: "Simulated",
+        status: this.providerConnector
+          ? await this.providerConnector.health()
+          : "Healthy",
+        mode: this.providerConnector?.mode || "mock",
+        dependencies: this.providerConnector
+          ? "LiteLLM model execution; prototype control plane"
+          : "Simulated",
         controlPlane: state.settings.controlPlane,
       });
     if (resource === "session") return respond(session);
     if (resource === "reset" && method === "POST") {
       permission("settings");
+      requireValue(
+        !this.providerConnector &&
+          !Object.keys(state.gatewayReceipts || {}).length,
+        "LiteLLM execution receipts must be retained. Use a separate mock data directory for a fresh demo workspace.",
+      );
       this.store.write(key, createState(undefined, session.tenant));
       this.receipts.clear();
       return { data: { reset: true }, meta: { correlationId, revision: 1 } };
@@ -463,14 +497,61 @@ export class MockBackend implements Transport {
     if (resource === "runtime" && method === "POST") {
       permission("run");
       requireValue(
+        ["model", "tool"].includes(id),
+        "Choose the model or tool runtime.",
+      );
+      requireValue(
         arr(state.settings.modules).includes(id === "tool" ? "M5" : "M4"),
         "The runtime module is not enabled.",
       );
+      const external = id === "model" && !!this.providerConnector;
+      const durableKey = external ? await hash(receiptKey) : "";
+      const payloadHash = external ? await hash(payload) : "";
+      const previous = state.gatewayReceipts?.[durableKey];
+      if (external && previous) {
+        if (previous.payloadHash !== payloadHash)
+          throw new ApiError(
+            409,
+            "IDEMPOTENCY_CONFLICT",
+            "This execution key was used with different values.",
+          );
+        if (previous.status === "pending")
+          throw new ApiError(
+            409,
+            "OUTCOME_UNKNOWN",
+            "This execution was interrupted. Its reservation is held; reconcile the existing trace before starting another request.",
+            false,
+            previous.trace,
+          );
+        return respond(find("traces", previous.trace), false);
+      }
+      const checkpoint = external
+        ? (trace: Row) => {
+            state.gatewayReceipts ||= {};
+            state.gatewayReceipts[durableKey] = {
+              payloadHash,
+              trace: trace.id,
+              status: "pending",
+            };
+            state.data.traces.unshift(trace);
+            state.revision++;
+            persist();
+          }
+        : undefined;
       const trace =
         id === "tool"
           ? this.runTool(state, session, body, find, audit)
-          : this.runModel(state, session, body, find, audit);
-      state.data.traces.unshift(trace);
+          : await this.runModel(state, session, body, find, audit, checkpoint);
+      if (!state.data.traces.some((t) => t.id === trace.id))
+        state.data.traces.unshift(trace);
+      if (external) {
+        state.gatewayReceipts ||= {};
+        state.gatewayReceipts[durableKey] = {
+          payloadHash,
+          trace: trace.id,
+          status: "complete",
+        };
+      }
       audit(
         `${id === "tool" ? "Tool" : "Model"} request · ${trace.decision}`,
         str(trace.reason),
@@ -1648,17 +1729,19 @@ export class MockBackend implements Transport {
       stages: [],
     };
   }
-  private runModel(
+  private async runModel(
     state: State,
     session: Session,
     body: Record<string, Json>,
     find: (c: Collection, id: string) => Row,
     audit: (e: string, d: string, r?: string) => void,
-  ): Row {
+    checkpoint?: (trace: Row) => void,
+  ): Promise<Row> {
     const project = find("projects", str(body.project)),
       trace = this.trace("model", session, project),
       stages: Json[] = [];
     trace.stages = stages;
+    trace.modelRuntime = this.providerConnector?.mode || "mock";
     const stage = (name: string, detail: string, status = "Passed") =>
       stages.push({ name, detail, status });
     const deny = (reason: string) => {
@@ -1694,6 +1777,24 @@ export class MockBackend implements Transport {
     const text = str(body.prompt),
       maxTokens = num(body.maxTokens, 1200);
     requireValue(text.trim(), "Enter a prompt.");
+    requireValue(
+      text.length <= 200_000 && Number.isInteger(maxTokens),
+      "Use a prompt below 200,000 characters and an integer output limit.",
+    );
+    if (this.providerConnector) {
+      requireValue(
+        !body.failure || body.failure === "none",
+        "Provider failure presets are available in mock runtime. LiteLLM reports actual execution errors.",
+      );
+      requireValue(
+        Object.keys(body).every((k) =>
+          ["project", "prompt", "maxTokens", "streaming", "failure"].includes(
+            k,
+          ),
+        ),
+        "Unsupported model request field.",
+      );
+    }
     if (maxTokens < 1 || maxTokens > num(policy.maxTokens))
       return deny("Requested output exceeds the active policy token limit");
     const inspection = this.inspect(text, policy, state);
@@ -1706,6 +1807,11 @@ export class MockBackend implements Transport {
       return (
         p &&
         p.status === "Healthy" &&
+        (!this.providerConnector ||
+          (this.providerConnector.eligible(id, session, str(policy.region)) &&
+            state.data.models.some(
+              (m) => m.provider === id && m.status === "Approved",
+            ))) &&
         (policy.region === "Any region" || str(p.region).startsWith("India"))
       );
     };
@@ -1730,9 +1836,14 @@ export class MockBackend implements Transport {
       estimate = 0,
       blocked = preflight;
     for (const id of candidates) {
-      const cost = round(
-          Math.max(0.01, (maxTokens / 1000) * (id === fallback ? 0.35 : 0.9)),
-        ),
+      const cost = this.providerConnector
+          ? this.providerConnector.quote(id, inspection.text, maxTokens)
+          : round(
+              Math.max(
+                0.01,
+                (maxTokens / 1000) * (id === fallback ? 0.35 : 0.9),
+              ),
+            ),
         check = this.budget(state, project, cost, body);
       if (check.ok) {
         if (check.route && check.route !== id) {
@@ -1785,7 +1896,7 @@ export class MockBackend implements Transport {
       "Route",
       `${selected === route.primary ? "Primary" : "Fallback"} · ${trace.target}`,
     );
-    if (body.failure === "timeout") {
+    if (!this.providerConnector && body.failure === "timeout") {
       trace.reason =
         "Provider timeout; conservative estimate held pending reconciliation";
       trace.decision = "ERROR";
@@ -1806,25 +1917,79 @@ export class MockBackend implements Transport {
       });
       return trace;
     }
-    trace.executed = true;
-    trace.cost = round(Math.max(0.01, estimate * 0.76));
-    trace.tokens = Math.ceil(text.length / 4) + Math.floor(maxTokens * 0.73);
-    trace.ms = selected === route.primary ? 847 : 618;
+    let output: string;
+    if (this.providerConnector) {
+      trace.executed = true;
+      trace.decision = "ERROR";
+      trace.reason =
+        "Provider execution in progress; reservation held until a verified result is recorded";
+      trace.cost = estimate;
+      trace.reservation = estimate;
+      trace.pendingCost = true;
+      checkpoint!(trace);
+      try {
+        const reply = await this.providerConnector.execute({
+          provider: selected,
+          prompt: inspection.text,
+          maxTokens,
+          traceId: trace.id,
+          project: project.id,
+          policyVersion: num(trace.policyVersion),
+          session,
+        });
+        output = reply.content;
+        trace.target = reply.model;
+        trace.upstreamRequestId = reply.requestId;
+        trace.cost = reply.costInr;
+        trace.inputTokens = reply.inputTokens;
+        trace.outputTokens = reply.outputTokens;
+        trace.tokens = reply.inputTokens + reply.outputTokens;
+        trace.ms = reply.elapsedMs;
+        trace.pendingCost = false;
+        trace.billingBasis = "Reported tokens × operator-configured INR rates";
+        stage(
+          "Provider execution",
+          "LiteLLM text completion buffered for response inspection",
+        );
+      } catch (error) {
+        const unknown =
+          !(error instanceof ProviderFailure) || error.outcome === "unknown";
+        trace.reason =
+          error instanceof ProviderFailure
+            ? error.message
+            : "Provider outcome is unknown; reconcile this trace before retrying";
+        trace.executed = unknown;
+        trace.cost = unknown ? estimate : 0;
+        trace.reservation = unknown ? estimate : 0;
+        trace.pendingCost = unknown;
+        stage(
+          "Provider execution",
+          str(trace.reason),
+          unknown ? "Pending" : "Failed",
+        );
+        return trace;
+      }
+    } else {
+      trace.executed = true;
+      trace.cost = round(Math.max(0.01, estimate * 0.76));
+      trace.tokens = Math.ceil(text.length / 4) + Math.floor(maxTokens * 0.73);
+      trace.ms = selected === route.primary ? 847 : 618;
+      output = text.includes("[demo:response-pii]")
+        ? "Demo response: customer 123456789012 requires review."
+        : `Demo response for ${project.name}: review the approved records and refer exceptions to the assigned reviewer.`;
+      stage(
+        "Provider execution",
+        body.streaming
+          ? `Simulated ${policy.streaming} stream`
+          : "Sample provider response",
+      );
+    }
     trace.decision =
       selected === route.primary ? inspection.decision : "ROUTE_ALTERNATE";
     trace.reason =
       selected === route.primary
         ? inspection.reason
         : "An eligible fallback met policy and budget constraints";
-    let output = text.includes("[demo:response-pii]")
-      ? "Demo response: customer 123456789012 requires review."
-      : `Demo response for ${project.name}: review the approved records and refer exceptions to the assigned reviewer.`;
-    stage(
-      "Provider execution",
-      body.streaming
-        ? `Simulated ${policy.streaming} stream`
-        : "Sample provider response",
-    );
     if (policy.response) {
       const response = this.inspect(
         output,

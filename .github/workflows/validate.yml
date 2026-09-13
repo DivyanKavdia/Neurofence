@@ -17,6 +17,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: npm run litellm:source
       - run: npx playwright install --with-deps chromium
       - run: npm test
       - name: Check committed static build
@@ -26,6 +27,37 @@ jobs:
         with:
           name: console-results
           path: test-results/
+  litellm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Start pinned LiteLLM fixture
+        env:
+          LITELLM_MASTER_KEY: sk-neuralfence-ci-fixture-only-key
+        run: docker compose -f integrations/litellm/compose.yaml up --wait --wait-timeout 120 -d
+      - name: Exercise the complete model path and mobile playground
+        env:
+          NF_TEST_LITELLM_URL: http://127.0.0.1:4000
+          NF_TEST_BROWSER: '1'
+        run: npm run test:litellm
+      - name: Fixture service diagnostics
+        if: failure()
+        run: docker compose -f integrations/litellm/compose.yaml logs --no-color
+        env:
+          LITELLM_MASTER_KEY: sk-neuralfence-ci-fixture-only-key
+      - name: Stop fixture
+        if: always()
+        run: docker compose -f integrations/litellm/compose.yaml down
+        env:
+          LITELLM_MASTER_KEY: sk-neuralfence-ci-fixture-only-key
   terraform:
     runs-on: ubuntu-latest
     timeout-minutes: 15

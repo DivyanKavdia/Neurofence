@@ -60,6 +60,10 @@ export type State = {
   revision: number;
   data: Record<Collection, Row[]>;
   settings: Row;
+  gatewayReceipts?: Record<
+    string,
+    { payloadHash: string; trace: string; status: "pending" | "complete" }
+  >;
 };
 export type Request = {
   method?: "GET" | "POST" | "PATCH" | "DELETE";

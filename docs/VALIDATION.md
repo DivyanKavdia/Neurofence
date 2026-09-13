@@ -1,4 +1,26 @@
-# Validation record — v0.4
+# Validation record — v0.5
+
+Checked on 13 September 2026 for the optional LiteLLM integration.
+
+| Check | Result |
+| --- | --- |
+| Strict TypeScript and reproducible static/server builds | Passed locally; GitHub CI pending |
+| API/HTTP and LiteLLM contract tests | 22 passed |
+| Existing browser workflows and responsive layouts | 75 passed |
+| Full NeuralFence HTTP BFF → LiteLLM v1.100.1 fixture | Passed locally with reported usage, request/response checks and replay protection |
+| Mobile playground through the actual LiteLLM fixture | Passed at 390 px with no JavaScript errors |
+| Metadata-only persistence and interrupted execution receipts | Passed |
+| Source revision and image pin | Source gitlink verified; image digest resolved from upstream registry |
+| Terraform formatting and configuration syntax | Passed locally; updated provider validation/mock plans pending CI |
+| Hardened Compose container fixture | Configured as a GitHub CI gate; pending |
+| Fork-source Docker build, enabled cloud plan/apply, paid provider calls | Not run |
+| GitHub LiteLLM fork | Pending creation; connector lacks the fork operation |
+
+The actual proxy test used the pinned Python LiteLLM release with a server-configured fixture response, so no provider credentials or paid inference were needed. It is distinct from the HTTP contract tests, which use a local protocol fixture. GitHub CI additionally exercises the digest-pinned container with the same restrictions as the optional Kubernetes workload.
+
+The integration guide documents the source/fork workflow, server-only configuration, current prototype boundaries and provisioning sequence. Existing public Pages continues using the browser mock.
+
+## Previous release — v0.4
 
 Checked on 13 September 2026 against the `feature/full-frontend` implementation, including GitHub CI on commit `17f8288546a2ac728849e53fe01454103aa56b80`.
 

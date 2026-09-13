@@ -910,6 +910,16 @@ export function TraceView({ trace }: { trace: Row }) {
           "tokens",
           "cost",
           "budgetAttribution",
+          ...(str(trace.modelRuntime).startsWith("litellm-")
+            ? [
+                "modelRuntime",
+                "upstreamRequestId",
+                "inputTokens",
+                "outputTokens",
+                "billingBasis",
+                "pendingCost",
+              ]
+            : []),
         ]}
       />
       <div className="waterfall">

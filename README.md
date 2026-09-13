@@ -1,6 +1,6 @@
 # NeuralFence
 
-A React/TypeScript enterprise AI trust console covering the 25 primary screens and nine workflows in the supplied Native Gateway UI scope. Version 0.4 preserves the approved NeuralFence branding and replaces the single-file prototype with a reusable frontend and stateful dummy BFF.
+A React/TypeScript enterprise AI trust console covering the 25 primary screens and nine workflows in the supplied Native Gateway UI scope. Version 0.5 adds an optional LiteLLM provider adapter to the frontend and stateful prototype BFF, while retaining the default offline demo.
 
 ![Command center](docs/screenshots/command-center.png)
 
@@ -24,6 +24,8 @@ npm run mock
 
 Open `http://127.0.0.1:8080`. No database or cloud account is needed for either demo mode.
 
+For the integrated LiteLLM fixture, fork/source build instructions and later live-provider configuration, follow [integrations/litellm/README.md](integrations/litellm/README.md). The source and container are pinned to v1.100.1; GitHub fork creation remains a separate pending step documented there. The existing playground can already call the actual LiteLLM proxy, apply request/response checks and record its token usage through the local BFF.
+
 ## What is connected
 
 Use **Explore workflows** to enter a guided journey. There are 10 navigation areas and 36 page/tab views, plus detail, editor and review dialogs.
@@ -46,7 +48,7 @@ The complete screen mapping is in [docs/SCOPE.md](docs/SCOPE.md).
 
 The browser and Node dummy backends share version checks, idempotency, scope enforcement, single-use approvals, period budgets, request/response decisions, cost reconciliation and audit generation. The browser stores data by tenant/environment; the HTTP mock stores it under `.runtime/data/`. Older v0.3 browser fixtures migrate when first opened; unused legacy approvals are cancelled for a fresh version-bound review. **Reset demo** restores the current workspace only.
 
-Everything remains synthetic: identities, credentials, providers, tools, workforce events, detector/OCR results, scans, prices and evidence integrity. `X-Demo-*` headers are not authentication. Do not deploy the HTTP mock as a production control API.
+The default demo is synthetic: identities, credentials, providers, tools, workforce events, detector/OCR results, scans, prices and evidence integrity. LiteLLM mode optionally replaces model execution only; it does not turn the other prototypes into production services. `X-Demo-*` headers are not authentication. Do not deploy the HTTP mock as a production control API.
 
 [docs/API.md](docs/API.md) explains the replaceable transport and integration sequence. [docs/openapi.json](docs/openapi.json) contains the BFF contract. Begin the real backend with the governed model and MCP call slices while retaining these UI workflows.
 
@@ -76,6 +78,8 @@ The gate checks TypeScript, builds the console, runs API/HTTP tests and drives b
 | `src/types.ts`, `src/api.ts`, `src/backend.ts`, `src/ledger.ts` | Contracts, replaceable transport, mock BFF and budget calculations |
 | `src/seed.ts`, `src/legacy-fixture.ts` | Demo data and migration from the previous prototype |
 | `server/mock-server.ts` | Optional loopback HTTP BFF with file persistence |
+| `src/provider.ts`, `server/litellm.ts` | Provider execution contract and server-only LiteLLM adapter |
+| `integrations/litellm/`, `vendor/litellm` | Fixture/live configuration, source lock, fork workflow and pinned upstream submodule |
 | `scripts/` | Static build, local server and Terraform output handoff |
 | `index.html`, `config.js`, `assets/console/` | Committed, self-contained static build |
 | `assets/brand/` | Approved identity, font and reusable marks |
