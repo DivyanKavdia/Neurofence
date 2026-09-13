@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { setTimeout } from "node:timers/promises";
 
 const lockPath = "integrations/litellm/source.lock.json";
@@ -84,6 +84,15 @@ try {
       throw new Error(
         "The destination must be an accessible fork of BerriAI/litellm.",
       );
+    if (!existsSync("vendor/litellm/.git"))
+      git([
+        "submodule",
+        "update",
+        "--init",
+        "--checkout",
+        "--depth=1",
+        "vendor/litellm",
+      ]);
     if (git(["-C", "vendor/litellm", "status", "--porcelain"]))
       throw new Error(
         "Commit or stash edits in the LiteLLM source checkout first.",

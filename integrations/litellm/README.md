@@ -9,7 +9,7 @@ NeuralFence v0.5 adds a working model execution adapter for LiteLLM v1.100.1. Th
 Create [your LiteLLM fork](https://github.com/BerriAI/litellm/fork), then from this repository run:
 
 ```bash
-git submodule update --init vendor/litellm
+git submodule update --init --checkout --recursive vendor/litellm
 npm run litellm:source -- --use DivyanKavdia/litellm
 npm run litellm:source
 ```
@@ -24,6 +24,8 @@ docker build -t neuralfence-litellm:1.100.1 vendor/litellm
 ```
 
 Set `NF_LITELLM_IMAGE=neuralfence-litellm:1.100.1` when running the local Compose profile. For cloud deployment, publish that image to the reserved `litellm` ECR repository and set `litellm_image` to its immutable registry digest. Upstream Docker builds include their own UI and dependency build stages and can take substantial time. Source builds have not been run in this workspace because Docker is unavailable; CI verifies the pinned upstream image separately.
+
+The submodule defaults to `update=none` so GitHub Pages publishes the web console without recursively copying the provider source tree into the site. The explicit `--checkout` above obtains the source for backend development and fork builds. Source revision checks and the container integration CI do not require that large checkout.
 
 The upstream root license is MIT except the separately licensed `enterprise/` tree. Preserve the source licenses and notices in fork builds. This integration uses the standard model-execution API and does not enable enterprise features; an upstream image may contain enterprise components whose rights are governed separately. See [LICENSE](https://github.com/BerriAI/litellm/blob/v1.100.1/LICENSE).
 
