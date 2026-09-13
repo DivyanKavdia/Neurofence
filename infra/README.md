@@ -101,3 +101,5 @@ terraform -chdir=infra/terraform/platform validate
 The AWS test file uses mock providers and `command = plan`; it does not provision resources. Platform validation checks the provider schema; a real platform plan requires the existing cluster.
 
 References: [Terraform validation](https://developer.hashicorp.com/terraform/cli/commands/validate), [mock provider tests](https://developer.hashicorp.com/terraform/language/tests/mocking), [EKS network policy configuration](https://docs.aws.amazon.com/eks/latest/userguide/cni-network-policy-configure.html).
+
+The LiteLLM runtime image is built from the backend source tracked in `vendor/litellm`, using `integrations/litellm/Dockerfile`. Publish that image and supply its digest as `litellm_image` before enabling the optional service. Terraform does not silently select an upstream executable image.

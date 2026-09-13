@@ -17,3 +17,6 @@ terraform.tfvars.json
 override.tf
 integrations/litellm/bindings.live.json
 integrations/litellm/live.yaml
+__pycache__/
+*.pyc
+_site/

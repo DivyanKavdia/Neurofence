@@ -1,0 +1,4 @@
+{
+  "include": ["litellm", "litellm-rust", ".cargo", "packaging", "LICENSE", "README.md", "pyproject.toml", "uv.lock", "schema.prisma", "model_prices_and_context_window.json", "model_prices_and_context_window.schema.json", "provider_endpoints_support.json", "policy_templates.json", "router_plugins.json", "whitelisted_bedrock_models.txt"],
+  "exclude": ["litellm/proxy/_experimental/out", "litellm/proxy/enterprise"]
+}

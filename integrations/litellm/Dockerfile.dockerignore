@@ -1,0 +1,14 @@
+**
+!vendor/
+!vendor/litellm/
+!vendor/litellm/**
+!scripts/
+!scripts/litellm_source.py
+!integrations/
+!integrations/litellm/
+!integrations/litellm/run.py
+!integrations/litellm/import.json
+!integrations/litellm/source.lock.json
+!integrations/litellm/source.manifest.json
+**/__pycache__
+**/*.pyc

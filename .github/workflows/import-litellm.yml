@@ -1,0 +1,37 @@
+name: Import reviewed LiteLLM source
+on:
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: Reviewed full LiteLLM commit SHA
+        required: true
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: litellm-source-import
+  cancel-in-progress: false
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Import source into a review branch
+        env:
+          REVISION: ${{ inputs.revision }}
+        run: |
+          [[ "$REVISION" =~ ^[a-f0-9]{40}$ ]] || exit 1
+          IMPORT_BRANCH="feature/litellm-vendor-${REVISION:0:12}"
+          git switch -c "$IMPORT_BRANCH"
+          python3 scripts/litellm_source.py import --revision "$REVISION"
+          python3 scripts/litellm_source.py check
+          git add -A -- vendor/litellm integrations/litellm/source.lock.json integrations/litellm/source.manifest.json
+          python3 -c 'import json, subprocess; paths=["vendor/litellm/" + p for p in json.load(open("integrations/litellm/source.manifest.json"))["upstreamFiles"]]; subprocess.run(["git", "add", "-f", "--pathspec-from-file=-", "--pathspec-file-nul"], input="\0".join(paths).encode()+b"\0", check=True)'
+          if git ls-files --error-unmatch .gitmodules >/dev/null 2>&1; then git add -u -- .gitmodules; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore: import reviewed LiteLLM backend source'
+          git push origin "HEAD:refs/heads/$IMPORT_BRANCH"
