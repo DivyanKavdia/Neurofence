@@ -1,0 +1,1065 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NeuralFence dummy control BFF",
+    "version": "0.4.0",
+    "description": "Development simulation only. X-Demo-* headers select a demo session and are not authentication. All runtime calls are synthetic. See docs/API.md for the production adapter boundary."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8080"
+    }
+  ],
+  "paths": {
+    "/api/v1/workspace": {
+      "get": {
+        "operationId": "get_workspace",
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/session": {
+      "get": {
+        "operationId": "get_session",
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/capabilities": {
+      "get": {
+        "operationId": "get_capabilities",
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "get_health",
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/runtime/model": {
+      "post": {
+        "operationId": "runtime_model",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/runtime/tool": {
+      "post": {
+        "operationId": "runtime_tool",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inspect": {
+      "post": {
+        "operationId": "inspect",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Inspection"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/settings": {
+      "patch": {
+        "operationId": "update_settings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reset": {
+      "post": {
+        "operationId": "reset_workspace",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{collection}": {
+      "parameters": [
+        {
+          "name": "collection",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "providers",
+              "models",
+              "projects",
+              "routes",
+              "policies",
+              "budgets",
+              "agents",
+              "servers",
+              "tools",
+              "assets",
+              "traces",
+              "approvals",
+              "incidents",
+              "audit",
+              "workforce",
+              "workforcePolicies",
+              "exceptions",
+              "campaigns",
+              "scans",
+              "integrations",
+              "members",
+              "detectors",
+              "savedViews",
+              "jobs"
+            ]
+          }
+        }
+      ],
+      "get": {
+        "operationId": "list_resources",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "create_resource",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Creation is supported for editable collections; traces, jobs, approvals and audit originate in their domain workflows."
+      }
+    },
+    "/api/v1/{collection}/{id}": {
+      "parameters": [
+        {
+          "name": "collection",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "providers",
+              "models",
+              "projects",
+              "routes",
+              "policies",
+              "budgets",
+              "agents",
+              "servers",
+              "tools",
+              "assets",
+              "traces",
+              "approvals",
+              "incidents",
+              "audit",
+              "workforce",
+              "workforcePolicies",
+              "exceptions",
+              "campaigns",
+              "scans",
+              "integrations",
+              "members",
+              "detectors",
+              "savedViews",
+              "jobs"
+            ]
+          }
+        },
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "get_resource",
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "update_resource",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete_resource",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reason"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Only members, integrations and saved views support deletion."
+      }
+    },
+    "/api/v1/{collection}/{id}/{action}": {
+      "parameters": [
+        {
+          "name": "collection",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "providers",
+              "models",
+              "projects",
+              "routes",
+              "policies",
+              "budgets",
+              "agents",
+              "servers",
+              "tools",
+              "assets",
+              "traces",
+              "approvals",
+              "incidents",
+              "audit",
+              "workforce",
+              "workforcePolicies",
+              "exceptions",
+              "campaigns",
+              "scans",
+              "integrations",
+              "members",
+              "detectors",
+              "savedViews",
+              "jobs"
+            ]
+          }
+        },
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "action",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "simulate",
+              "submit",
+              "canary",
+              "publish",
+              "promote",
+              "rollback",
+              "validate",
+              "discover",
+              "approve",
+              "issue",
+              "rotate",
+              "revoke",
+              "status",
+              "workflow",
+              "snapshot",
+              "run",
+              "retest",
+              "remediate",
+              "gate",
+              "test",
+              "decision",
+              "review",
+              "contain",
+              "resolve",
+              "reopen",
+              "export",
+              "reveal",
+              "replay"
+            ]
+          }
+        }
+      ],
+      "post": {
+        "operationId": "resource_action",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Actions depend on collection and capability. See docs/API.md. Decision requires Review fields; containment, deletion, review and rollback require a reason."
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "Idempotency": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "Version": {
+        "name": "If-Match",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "schemas": {
+      "Resource": {
+        "type": "object",
+        "required": [
+          "id",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": true
+      },
+      "Envelope": {
+        "type": "object",
+        "properties": {
+          "data": {},
+          "meta": {
+            "type": "object",
+            "properties": {
+              "correlationId": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "integer"
+              },
+              "nextCursor": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "correlationId",
+              "revision"
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              },
+              "correlationId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "retryable",
+              "correlationId"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "ModelRequest": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "maxTokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 32768
+          },
+          "streaming": {
+            "type": "boolean"
+          },
+          "failure": {
+            "type": "string",
+            "enum": [
+              "",
+              "timeout"
+            ]
+          },
+          "concurrency": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "project",
+          "prompt"
+        ]
+      },
+      "ToolRequest": {
+        "type": "object",
+        "properties": {
+          "agent": {
+            "type": "string"
+          },
+          "tool": {
+            "type": "string"
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "agent",
+          "tool",
+          "args"
+        ]
+      },
+      "Inspection": {
+        "type": "object",
+        "properties": {
+          "policy": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "draft": {
+            "type": "boolean"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "Request",
+              "Response",
+              "Tool arguments",
+              "File / OCR"
+            ]
+          }
+        },
+        "required": [
+          "policy",
+          "text"
+        ]
+      },
+      "Trace": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Resource"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "workflow": {
+                "type": "string"
+              },
+              "decisionId": {
+                "type": "string"
+              },
+              "policyVersion": {
+                "type": "integer"
+              },
+              "project": {
+                "type": "string"
+              },
+              "agent": {
+                "type": "string"
+              },
+              "principal": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "model",
+                  "tool"
+                ]
+              },
+              "decision": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "executed": {
+                "type": "boolean"
+              },
+              "cost": {
+                "type": "number"
+              },
+              "tokens": {
+                "type": "integer"
+              },
+              "pendingCost": {
+                "type": "boolean"
+              },
+              "budgetScope": {
+                "type": "string"
+              },
+              "preview": {
+                "type": "string"
+              },
+              "output": {
+                "type": "string"
+              },
+              "stages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": []
+                }
+              }
+            },
+            "required": []
+          }
+        ]
+      },
+      "Review": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "Approved",
+              "Denied"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5
+          }
+        },
+        "required": [
+          "decision",
+          "reason"
+        ]
+      },
+      "Reason": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 5
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "Fields": {
+        "type": "object",
+        "description": "Collection-specific validated fields are defined in src/backend.ts and the API handoff. Unknown fields are rejected on resource create/edit.",
+        "additionalProperties": true
+      }
+    }
+  }
+}
