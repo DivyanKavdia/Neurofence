@@ -1,6 +1,6 @@
 # Mock BFF and production handoff
 
-The React console uses the `Transport` interface in `src/types.ts`. `src/api.ts` selects a browser-backed `MockBackend` or an HTTP transport. Both dummy backends execute the same handlers in `src/backend.ts`; the Node adapter changes only persistence and transport. [openapi.json](openapi.json) describes the exposed BFF envelope, routes and runtime inputs.
+The React console uses the `Transport` interface in `src/types.ts`. `src/api.ts` selects a browser-backed `MockBackend` or an HTTP transport. Both use the handlers in `src/backend.ts`; the Node adapter adds file persistence and can inject the optional LiteLLM model connector. [openapi.json](openapi.json) describes the exposed BFF envelope, routes and runtime inputs.
 
 ## Run the HTTP dummy backend
 
@@ -9,13 +9,13 @@ npm ci
 npm run mock
 ```
 
-Open `http://127.0.0.1:8080`. This serves the built console, supplies HTTP mode through `/config.js`, and stores isolated demo workspaces under `.runtime/data/`. Restarting the server preserves records. The static Pages build uses browser storage and requires no backend process. Both modes run without calling a model provider, MCP server or cloud service.
+Open `http://127.0.0.1:8080`. This serves the built console, supplies HTTP mode through `/config.js`, and stores isolated demo workspaces under `.runtime/data/`. Restarting the server preserves records. The static Pages build uses browser storage and requires no backend process. Both default modes run without calling a model provider, MCP server or cloud service. To enable the LiteLLM execution adapter, use the explicit server configuration in [the integration guide](../integrations/litellm/README.md).
 
 ## Envelope and concurrency
 
 Successful responses use `{ "data": ..., "meta": { "correlationId": "...", "revision": 1 } }`. Collections return an array in `data`; `meta.nextCursor` is present when another page exists. Lists accept `q`, `status`, `sort`, `cursor` and `limit` (1–100). Sorting is descending by the selected field. Detail and aggregate reads return objects. Times are epoch milliseconds and demo costs are INR numbers.
 
-Every mutation includes `Idempotency-Key`. Editing or acting on an existing resource also includes its integer `version` in `If-Match`. A stale version returns 409 `VERSION_CONFLICT`; a missing version returns 428 `VERSION_REQUIRED`; reusing an idempotency key with a different payload returns 409 `IDEMPOTENCY_CONFLICT`. A valid repeat returns the original receipt without repeating execution. Receipts currently last for the mock process/browser session, so a production backend must persist them transactionally.
+Every mutation includes `Idempotency-Key`. Editing or acting on an existing resource also includes its integer `version` in `If-Match`. A stale version returns 409 `VERSION_CONFLICT`; a missing version returns 428 `VERSION_REQUIRED`; reusing an idempotency key with a different payload returns 409 `IDEMPOTENCY_CONFLICT`. A valid repeat returns its receipt without repeating execution. Ordinary mock receipts last for the process/browser session. LiteLLM model execution additionally persists a request hash, trace and pending/completed receipt before and after the external call. Interrupted receipts return 409 `OUTCOME_UNKNOWN`; they never silently execute again. Production must move these records and reservations into transactional shared storage.
 
 Errors use `{ "error": { "code": "...", "message": "...", "retryable": false, "correlationId": "..." } }`. Input, capability, context and entitlement checks run in the BFF as well as the interface. The UI preserves form values after errors and requires a reload after a stale edit. There is no automatic retry of a non-idempotent execution with a new request key.
 
@@ -51,6 +51,8 @@ Tool approvals bind the agent, workflow, exact canonical arguments, resource, to
 
 Runtime traces carry `id`, `workflow`, `decisionId`, `policyVersion`, principal/application/agent context, classification signals, stage results, executed flag, tokens, reservation and cost. Normalize these camelCase BFF fields to the engineering baseline's `trace_id`, `workflow_id`, `decision_id`, `policy_version` at the service adapter boundary. Request blocks cost zero; response blocks retain provider charges. Timeout estimates stay charged pending a reconciliation job. The mock serializes transactions to prevent concurrent overspend; production needs durable atomic reservations and an outbox.
 
+In LiteLLM mode, `modelRuntime`, `upstreamRequestId`, `inputTokens`, `outputTokens` and `billingBasis` identify the actual execution and reported usage. Its timeouts/ambiguous results retain an estimate without a synthetic reconciliation job. The UI receives inspected text immediately; when content retention is disabled the persisted trace contains content-omission markers. A replay after restart returns that metadata-only trace. The gateway ignores no security-relevant client overrides: endpoint, key, provider alias, region and rates come from operator configuration. SSE delivery is not implemented for this slice; upstream text is buffered before response inspection.
+
 Assurance jobs expose `jobId`, running status, progress and completion through polling. Sample runs fail until a remediation reference is linked; retests then pass deterministically. This demonstrates the release workflow, not real assurance verification.
 
 ## Authentication, privacy and backend replacement
@@ -62,3 +64,5 @@ Default reads remove retained content and approval fingerprints. Reveal is a sep
 Replace the BFF service implementations behind the existing interface, starting with the governed model and MCP slices. Keep mock fixtures for local UX development and contract tests. Move large lists to the existing list API, add bounded aggregate summaries and production cursor semantics, then replace polling with the selected event transport. Publish the actual OpenAI-compatible gateway ingress separately from this control BFF; the sample application key/base-URL panel is an integration example, not a live provider endpoint.
 
 The dependency values and provisioning sequence are in [infra/README.md](../infra/README.md).
+
+The HTTP file store uses an encoded scope name under its private `scopes/` directory, atomically renames flushed files, and restricts their permissions. Legacy filenames with unambiguous tenant/environment IDs remain readable; ambiguous legacy filenames require ownership verification before migration. This prevents hyphenated scope identifiers from sharing a file.

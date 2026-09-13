@@ -1,6 +1,6 @@
 {
   "name": "neurofence-prototype",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "NeuralFence React console, mock BFF and Terraform backend dependency foundation",
   "scripts": {
@@ -8,12 +8,15 @@
     "typecheck": "tsc --noEmit",
     "dev": "node scripts/serve.mjs",
     "mock": "node scripts/build.mjs && node .runtime/mock-server.cjs",
-    "test": "npm run typecheck && npm run build && node --test tests/backend.test.cjs tests/http.test.cjs && node tests/console.cjs",
+    "test": "npm run typecheck && npm run build && npm run test:api && node tests/console.cjs",
     "test:browser": "node tests/console.cjs",
-    "test:api": "node --test tests/backend.test.cjs tests/http.test.cjs"
+    "test:api": "node --test tests/backend.test.cjs tests/http.test.cjs tests/litellm.test.cjs",
+    "test:litellm": "node tests/litellm-stack.cjs",
+    "litellm:source": "node scripts/litellm-source.mjs",
+    "litellm:fork": "node scripts/litellm-source.mjs --create-fork"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "devDependencies": {
     "@types/node": "22.20.2",

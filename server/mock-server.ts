@@ -5,9 +5,13 @@ import {
   readFileSync,
   renameSync,
   writeFileSync,
+  openSync,
+  fsyncSync,
+  closeSync,
 } from "node:fs";
 import { extname, resolve } from "node:path";
 import { MockBackend, Store } from "../src/backend";
+import { configuredLiteLLM } from "./litellm";
 import {
   ApiError,
   initialSession,
@@ -22,25 +26,46 @@ import {
 const root = resolve(process.env.NF_WEB_ROOT || "."),
   storeDir = resolve(process.env.NF_MOCK_DATA || ".runtime/data");
 mkdirSync(storeDir, { recursive: true });
+const scopesDir = resolve(storeDir, "scopes");
+mkdirSync(scopesDir, { recursive: true, mode: 0o700 });
 class FileStore implements Store {
   private path(key: string) {
-    if (!/^[a-zA-Z0-9:_-]+$/.test(key))
+    if (!/^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+$/.test(key))
       throw new ApiError(400, "INVALID_CONTEXT", "Invalid workspace context.");
-    return resolve(storeDir, key.replace(":", "-") + ".json");
+    return resolve(scopesDir, Buffer.from(key).toString("base64url") + ".json");
   }
   read(key: string) {
     const file = this.path(key);
-    return existsSync(file)
-      ? (JSON.parse(readFileSync(file, "utf8")) as State)
-      : undefined;
+    if (existsSync(file))
+      return JSON.parse(readFileSync(file, "utf8")) as State;
+    const legacy = resolve(storeDir, key.replace(":", "-") + ".json");
+    if (!existsSync(legacy)) return undefined;
+    if (!/^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+$/.test(key))
+      throw new ApiError(
+        409,
+        "LEGACY_SCOPE_AMBIGUOUS",
+        "Verify ownership of this legacy workspace file before migrating it to the encoded scope directory.",
+      );
+    return JSON.parse(readFileSync(legacy, "utf8")) as State;
   }
   write(key: string, state: State) {
     const file = this.path(key);
-    writeFileSync(file + ".tmp", JSON.stringify(state));
+    writeFileSync(file + ".tmp", JSON.stringify(state), {
+      mode: 0o600,
+      flush: true,
+    });
     renameSync(file + ".tmp", file);
+    if (process.platform !== "win32") {
+      const directory = openSync(scopesDir, "r");
+      try {
+        fsyncSync(directory);
+      } finally {
+        closeSync(directory);
+      }
+    }
   }
 }
-const backend = new MockBackend(new FileStore(), 0);
+const backend = new MockBackend(new FileStore(), 0, configuredLiteLLM());
 const mime: Record<string, string> = {
   ".html": "text/html",
   ".js": "text/javascript",

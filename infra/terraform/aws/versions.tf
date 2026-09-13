@@ -41,6 +41,6 @@ locals {
 
   name     = "${var.name}-${var.environment}"
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
-  services = toset(["control-api", "ai-gateway", "mcp-gateway", "guardrails", "policy", "finops", "telemetry", "evidence", "worker", "redteam", "scanner", "web-console"])
+  services = toset(["control-api", "ai-gateway", "litellm", "mcp-gateway", "guardrails", "policy", "finops", "telemetry", "evidence", "worker", "redteam", "scanner", "web-console"])
 
 }

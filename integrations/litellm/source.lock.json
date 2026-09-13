@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/BerriAI/litellm.git",
+  "upstream": "https://github.com/BerriAI/litellm.git",
+  "release": "v1.100.1",
+  "commit": "1dba17b10ded12ad0021edb453ba2c54e4637928",
+  "image": "ghcr.io/berriai/litellm:v1.100.1@sha256:a3715fa7ad8387941ab697259bd2881d68931657247a41984f90fae6d11c62bf",
+  "forkStatus": "pending-github-creation"
+}

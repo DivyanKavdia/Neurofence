@@ -1,0 +1,16 @@
+model_list:
+  - model_name: neuralfence-primary
+    litellm_params:
+      model: os.environ/NF_PROVIDER_MODEL
+      api_base: os.environ/NF_PROVIDER_API_BASE
+      api_key: os.environ/NF_PROVIDER_API_KEY
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  disable_spend_logs: true
+litellm_settings:
+  telemetry: false
+  turn_off_message_logging: true
+  num_retries: 0
+  request_timeout: 8
+router_settings:
+  num_retries: 0

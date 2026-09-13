@@ -671,6 +671,15 @@ function GatewayOverview() {
     traces = d.traces.filter((t) => t.kind === "model");
   return (
     <>
+      {str(ctx.state.settings.modelRuntime).startsWith("litellm-") && (
+        <Notice>
+          Model execution:{" "}
+          {ctx.state.settings.modelRuntime === "litellm-live"
+            ? "live provider through LiteLLM"
+            : "LiteLLM test fixture"}
+          . Account, catalog and policy controls use prototype data.
+        </Notice>
+      )}
       <Stats
         items={[
           {
@@ -801,6 +810,8 @@ function Playground({
   const ctx = useConsole(),
     d = ctx.state.data,
     toolMode = kind === "tool",
+    external =
+      !toolMode && str(ctx.state.settings.modelRuntime).startsWith("litellm-"),
     fromTrace = d.traces.find((t) => t.id === focusId);
   const [project, setProject] = useState(
       str(
@@ -830,6 +841,12 @@ function Playground({
     [last, setLast] = useState<Row | null>(null),
     [error, setError] = useState("");
   useEffect(() => {
+    if (external) {
+      setFailure("none");
+      setStreaming(false);
+    }
+  }, [external]);
+  useEffect(() => {
     const t = d.tools.find((t) => t.id === tool);
     setArgs(
       JSON.stringify(
@@ -845,7 +862,11 @@ function Playground({
       ),
     );
   }, [tool]);
-  const trace = last ? d.traces.find((t) => t.id === last.id) || last : null;
+  const trace = last
+    ? external
+      ? last
+      : d.traces.find((t) => t.id === last.id) || last
+    : null;
   if (!d.projects.length)
     return (
       <Empty
@@ -857,7 +878,11 @@ function Playground({
     <div className="cols playground-cols">
       <Panel
         title={toolMode ? "Governed tool call" : "Governed model request"}
-        sub="Inspect each simulated decision and its effect on access, budget and evidence."
+        sub={
+          external
+            ? "Inspect the gateway decision, LiteLLM result and reported usage."
+            : "Inspect each simulated decision and its effect on access, budget and evidence."
+        }
       >
         <form
           onSubmit={async (e) => {
@@ -883,6 +908,15 @@ function Playground({
             }
           }}
         >
+          {external && (
+            <Notice>
+              {ctx.state.settings.modelRuntime === "litellm-live"
+                ? "This request uses a configured live provider and can incur charges."
+                : "This request runs through LiteLLM with a fixed test response; no provider keys are needed."}{" "}
+              The response is checked before display. With content retention
+              disabled, only metadata is saved.
+            </Notice>
+          )}
           {toolMode ? (
             <>
               <label className="field">
@@ -1007,6 +1041,7 @@ function Playground({
                   Provider behavior
                   <select
                     aria-label="Provider behavior"
+                    disabled={external}
                     value={failure}
                     onChange={(e) => setFailure(e.target.value)}
                   >
@@ -1018,10 +1053,13 @@ function Playground({
               <label className="row">
                 <input
                   type="checkbox"
+                  disabled={external}
                   checked={streaming}
                   onChange={(e) => setStreaming(e.target.checked)}
                 />
-                Stream response
+                {external
+                  ? "Response checked before display"
+                  : "Stream response"}
               </label>
             </>
           )}

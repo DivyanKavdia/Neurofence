@@ -1,0 +1,18 @@
+model_list:
+  - model_name: neuralfence-fixture
+    litellm_params:
+      model: openai/neuralfence-fixture
+      api_key: fixture-unused-key
+      mock_response: "NeuralFence LiteLLM fixture: customer 123456789012 requires review."
+      input_cost_per_token: 0
+      output_cost_per_token: 0
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  disable_spend_logs: true
+litellm_settings:
+  telemetry: false
+  turn_off_message_logging: true
+  num_retries: 0
+  request_timeout: 8
+router_settings:
+  num_retries: 0

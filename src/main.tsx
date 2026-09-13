@@ -341,7 +341,7 @@ function App() {
               </div>
               <div className="sidebar-footer">
                 <span className="dot" />
-                DEMO WORKSPACE <span>v0.4</span>
+                DEMO WORKSPACE <span>v0.5</span>
               </div>
             </div>
           </aside>

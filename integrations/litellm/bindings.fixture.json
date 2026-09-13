@@ -1,0 +1,8 @@
+{
+  "mode": "litellm-fixture",
+  "workspaces": ["acme:Development"],
+  "providers": {
+    "azure": { "alias": "neuralfence-fixture", "region": "India Central (synthetic)", "inputInrPerMillion": 350, "outputInrPerMillion": 900 },
+    "vertex": { "alias": "neuralfence-fixture", "region": "India West (synthetic)", "inputInrPerMillion": 350, "outputInrPerMillion": 900 }
+  }
+}

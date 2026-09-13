@@ -43,6 +43,7 @@ output "backend_dependencies" {
     clickhouse_url          = "http://clickhouse.neuralfence.svc.cluster.local:8123"
     telemetry_url           = "http://otel.neuralfence.svc.cluster.local:4318"
     policy_url              = "http://policy.neuralfence.svc.cluster.local:8181"
+    litellm_url             = "http://litellm.neuralfence-litellm.svc.cluster.local:4000"
 
   }
 

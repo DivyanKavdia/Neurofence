@@ -15,3 +15,5 @@ Thumbs.db
 terraform.tfvars
 terraform.tfvars.json
 override.tf
+integrations/litellm/bindings.live.json
+integrations/litellm/live.yaml

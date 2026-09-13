@@ -15,6 +15,7 @@ The frontend works immediately with its mock BFF. These definitions prepare the 
 | Deterministic policy runtime | OPA | Two OPA pods, default-deny bootstrap | Policy service and gateways |
 | Telemetry | OTel + Prometheus | Two OTel pods and configurable OTLP export | All services |
 | Container hosting | Optional dependency Compose | Private EKS, managed nodes, EBS CSI, VPC CNI network policy, ECR repositories | Future signed backend images |
+| Optional LiteLLM execution | Separate pinned fixture Compose | Reserved ECR/secret slot; optional private deployment and isolated namespace | NeuralFence provider adapter |
 | Enterprise identity | Supplied issuer | Configurable OIDC issuer and client-secret slot | Future identity/control API |
 
 The dependency boundary is portable. The frontend calls the same BFF interface in SaaS, private-cloud, on-premises and air-gapped previews. AWS Mumbai is the initial Terraform profile; another cloud requires another infrastructure root using the same dependency contract.
@@ -79,6 +80,8 @@ Bind future services to service account `runtime` in namespace `neuralfence` to 
 | OIDC issuer / client secret | `backend_dependencies.oidc_issuer`, `application_secret_refs["oidc-client"]` |
 
 The frontend/mock API is not deployed into this cluster. ECR repositories reserve the service boundaries; migrations, real authorization, signed bundles, provider connectors and service images are the next backend implementation. Add ingress/TLS/domain configuration when deploying the control API and console. No real provider secret belongs in `config.js` or the browser bundle.
+
+The [LiteLLM integration guide](../integrations/litellm/README.md) documents its optional deployment. `enable_litellm` defaults to false; enabling it requires reviewed YAML and a populated `litellm-executor` secret. The deployment uses a dedicated namespace and admits only labeled gateway/control-api clients. A real enabled plan and cluster startup validation remain required.
 
 ## Profiles and validation limits
 

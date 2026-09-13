@@ -167,7 +167,7 @@ resource "aws_s3_bucket_policy" "evidence" {
 }
 resource "aws_secretsmanager_secret" "application" {
 
-  for_each                = toset(["postgres-app", "clickhouse", "provider-openai", "provider-azure", "provider-anthropic", "provider-bedrock", "provider-gemini", "mcp-upstream", "oidc-client", "siem-webhook"])
+  for_each                = toset(["postgres-app", "clickhouse", "litellm-executor", "provider-openai", "provider-azure", "provider-anthropic", "provider-bedrock", "provider-gemini", "mcp-upstream", "oidc-client", "siem-webhook"])
   name                    = "${local.name}/${each.key}"
   description             = "Populate through the secure backend bootstrap workflow before deploying a consumer"
   kms_key_id              = aws_kms_key.platform.arn

@@ -66,6 +66,34 @@ test("HTTP adapter serves the console and persists isolated, versioned BFF mutat
     assert.equal(unauthorized.status, 403);
     assert.equal((await unauthorized.json()).error.code, "FORBIDDEN");
     assert.equal((await fetch(base + "/server/mock-server.ts")).status, 404);
+    const firstScope = {
+      "X-Demo-Tenant": "north-west",
+      "X-Demo-Environment": "Development",
+    };
+    const secondScope = {
+      "X-Demo-Tenant": "north",
+      "X-Demo-Environment": "west-Development",
+    };
+    const firstState = (await get("/api/v1/workspace", firstScope)).data;
+    const rename = await fetch(base + "/api/v1/settings", {
+      method: "PATCH",
+      headers: {
+        ...firstScope,
+        "Content-Type": "application/json",
+        "If-Match": String(firstState.settings.version),
+        "Idempotency-Key": "isolated-setting",
+      },
+      body: JSON.stringify({ name: "First isolated workspace" }),
+    });
+    assert.equal(rename.status, 200);
+    assert.equal(
+      (await get("/api/v1/workspace", firstScope)).data.settings.name,
+      "First isolated workspace",
+    );
+    assert.notEqual(
+      (await get("/api/v1/workspace", secondScope)).data.settings.name,
+      "First isolated workspace",
+    );
     assert.equal(
       (
         await fetch(base + "/api/v1/workspace", {
