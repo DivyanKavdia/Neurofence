@@ -3,7 +3,7 @@
   "info": {
     "title": "NeuralFence dummy control BFF",
     "version": "0.5.0",
-    "description": "Development simulation only. X-Demo-* headers select a demo session and are not authentication. All runtime calls are synthetic. See docs/API.md for the production adapter boundary."
+    "description": "Development simulation only. X-Demo-* headers select a demo session and are not authentication. The default runtime is synthetic; the local API can optionally execute governed text-model requests through LiteLLM. See docs/api.md for the production adapter boundary."
   },
   "servers": [
     {
@@ -758,7 +758,7 @@
             }
           }
         },
-        "description": "Actions depend on collection and capability. See docs/API.md. Decision requires Review fields; containment, deletion, review and rollback require a reason."
+        "description": "Actions depend on collection and capability. See docs/api.md. Decision requires Review fields; containment, deletion, review and rollback require a reason."
       }
     }
   },
@@ -1058,7 +1058,7 @@
       },
       "Fields": {
         "type": "object",
-        "description": "Collection-specific validated fields are defined in src/backend.ts and the API handoff. Unknown fields are rejected on resource create/edit.",
+        "description": "Collection-specific validated fields are defined in packages/demo-backend/src/resources/schema.ts and the API handoff. Unknown fields are rejected on resource create/edit.",
         "additionalProperties": true
       }
     }

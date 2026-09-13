@@ -1,88 +1,57 @@
-# NeuralFence
+# Neurofence
 
-A React/TypeScript enterprise AI trust console covering the 25 primary screens and nine workflows in the supplied Native Gateway UI scope. Version 0.5 adds an optional LiteLLM provider adapter to the frontend and stateful prototype BFF, while retaining the default offline demo.
+Neurofence is an enterprise AI security and governance workspace. It brings model access, guardrails, agents and MCP tools, budgets, incidents, inventory and assurance into one console.
+
+The React frontend has a stateful demo backend for working through the product flows. An optional local API connects the model playground to the LiteLLM backend source included in this repository.
+
+[Open the demo](https://divyankavdia.github.io/Neurofence/) · [Product scope](docs/product-scope.md) · [Architecture](docs/architecture.md)
 
 ![Command center](docs/screenshots/command-center.png)
 
-## Open or run
+## Start developing
 
-Open [NeuralFence on GitHub Pages](https://divyankavdia.github.io/Neurofence/) or the repository's built `index.html` directly in a browser. The static console runs offline with browser storage.
-
-For development, use Node.js 24:
+Use Node.js 24. Run these commands from the repository root:
 
 ```bash
 npm ci
-npm run build
 npm run dev
 ```
 
-Open `http://127.0.0.1:8000`. Rebuild after changing source. To use the same dummy backend over HTTP with persistent local records:
+Open `http://127.0.0.1:8000`. Source changes rebuild automatically; refresh the browser to see them. Demo records persist in browser storage. Use **Explore workflows** for guided journeys and the profile menu to try another role or reviewer.
 
-```bash
-npm run mock
-```
+## Choose a run mode
 
-Open `http://127.0.0.1:8080`. No database or cloud account is needed for either demo mode.
+| Mode | Start here | What runs |
+| --- | --- | --- |
+| Browser demo | `npm run dev` or the public demo | Console and shared demo logic; browser persistence; no backend account required |
+| Local HTTP API | `npm run mock`, then open port 8080 | Same console and demo logic, with file persistence in `.runtime/data/` |
+| LiteLLM model execution | [Runtime guide](integrations/litellm/README.md) | Local API plus the included LiteLLM source; fixture responses or explicitly configured live text models |
 
-For the integrated LiteLLM fixture, fork/source build instructions and later live-provider configuration, follow [integrations/litellm/README.md](integrations/litellm/README.md). LiteLLM backend code from [DivyanKavdia/litellm](https://github.com/DivyanKavdia/litellm) is tracked directly in `vendor/litellm`, pinned to the tested v1.100.1 commit. The local container loads that source using a pinned dependency image; it does not require a submodule. The existing playground can already call the actual LiteLLM proxy, apply request/response checks and record its token usage through the local BFF.
+LiteLLM replaces model execution only. Identity preview, virtual credentials, detector examples, MCP execution, workforce collection and assurance scans remain prototypes. The HTTP API is for local evaluation; its demo identity headers are not authentication.
 
-## What is connected
+## Where to work
 
-Use **Explore workflows** to enter a guided journey. There are 10 navigation areas and 36 page/tab views, plus detail, editor and review dialogs.
-
-- Provider onboarding: validate a secret reference, discover models, approve deployments and publish the catalog.
-- Applications: bind route, guardrail and budget; issue/rotate/revoke a demo key; test allowed, redacted, blocked and timeout requests.
-- Policies and routes: edit immutable drafts, simulate impact, request independent review, publish a canary, promote or roll back.
-- Agents and MCP: register identity/purpose, scope tools and data, inspect schemas, approve an exact request once, and enforce workflow limits.
-- FinOps: create hierarchical budgets, inspect period-attributed usage, quotas, threshold actions, forecasts, anomalies and allocation exports.
-- Incident response: investigate trace/evidence, assign and annotate, contain/revoke, resolve/reopen and export findings.
-- Workforce AI: simulate account/activity events, configure coaching and controls, and review time-bound exceptions.
-- Assurance: run campaigns and supply-chain jobs, inspect failures, link remediation, retest and release the gate.
-- Governance: review approvals, exceptions, evidence, audit, integrations, members, capabilities, deployment and retention settings.
-
-The role preview and profile menu let you test capabilities and switch to an independent reviewer. The mobile navigation provides the same flows through cards and dialogs. Tables support search, filtering, sorting, columns, saved views, pagination and exports; global search and hash links open related objects.
-
-The complete screen mapping is in [docs/SCOPE.md](docs/SCOPE.md).
-
-## Mock and real backend boundary
-
-The browser and Node dummy backends share version checks, idempotency, scope enforcement, single-use approvals, period budgets, request/response decisions, cost reconciliation and audit generation. The browser stores data by tenant/environment; the HTTP mock stores it under `.runtime/data/`. Older v0.3 browser fixtures migrate when first opened; unused legacy approvals are cancelled for a fresh version-bound review. **Reset demo** restores the current workspace only.
-
-The default demo is synthetic: identities, credentials, providers, tools, workforce events, detector/OCR results, scans, prices and evidence integrity. LiteLLM mode optionally replaces model execution only; it does not turn the other prototypes into production services. `X-Demo-*` headers are not authentication. Do not deploy the HTTP mock as a production control API.
-
-[docs/API.md](docs/API.md) explains the replaceable transport and integration sequence. [docs/openapi.json](docs/openapi.json) contains the BFF contract. Begin the real backend with the governed model and MCP call slices while retaining these UI workflows.
-
-## Cloud dependencies for later
-
-[infra/README.md](infra/README.md) maps every backend dependency and gives the provisioning sequence. Terraform contains AWS Mumbai network/EKS/ECR, RDS PostgreSQL, ElastiCache Valkey, MSK, encrypted S3 evidence, KMS/Secrets Manager and IAM; a second root installs ClickHouse, OPA and OpenTelemetry. Local Compose definitions mirror the dependency interfaces.
-
-No cloud resources have been created. GitHub CI passes formatting and provider validation for both Terraform roots, plus both credential-free AWS mock plans. Review an account-specific plan before applying; the platform plan requires an existing cluster and VPC connectivity.
-
-## Verification
-
-```bash
-npm ci
-npx playwright install --with-deps chromium
-npm test
-```
-
-The gate checks TypeScript, builds the console, runs API/HTTP tests and drives browser workflows and layouts at 320, 390, 768 and 1440 pixels. Results and screenshots are written to `test-results/`. `NEUROFENCE_BROWSER_PATH` selects an existing Chromium executable; `NEUROFENCE_SOFTWARE_RENDERING=1` enables the constrained headless graphics configuration.
-
-[docs/VALIDATION.md](docs/VALIDATION.md) records completed checks and remaining gates. CI contains the same frontend gate and credential-free Terraform validation/mock-plan jobs; it does not apply infrastructure.
-
-## Project structure
-
-| Path | Purpose |
+| Directory | Responsibility |
 | --- | --- |
-| `src/main.tsx`, `src/pages.tsx`, `src/catalogs.tsx`, `src/ui.tsx` | Application shell, pages, domain forms/details, shared controls |
-| `src/types.ts`, `src/api.ts`, `src/backend.ts`, `src/ledger.ts` | Contracts, replaceable transport, mock BFF and budget calculations |
-| `src/seed.ts`, `src/legacy-fixture.ts` | Demo data and migration from the previous prototype |
-| `server/mock-server.ts` | Optional loopback HTTP BFF with file persistence |
-| `src/provider.ts`, `server/litellm.ts` | Provider execution contract and server-only LiteLLM adapter |
-| `integrations/litellm/`, `vendor/litellm` | Fixture/live configuration, source lock, update workflow and directly tracked backend source |
-| `scripts/` | Static build, local server and Terraform output handoff |
-| `index.html`, `config.js`, `assets/console/` | Committed, self-contained static build |
-| `assets/brand/` | Approved identity, font and reusable marks |
-| `infra/`, `docs/`, `tests/` | Provisioning definitions, scope/API handoff and verification |
+| `apps/console/src/app/` | Session, navigation, application shell and dialogs |
+| `apps/console/src/features/` | Product pages and resource editors, grouped by feature |
+| `apps/console/src/components/` | Shared tables, forms and accessible dialog controls |
+| `apps/api/src/` | Local HTTP server, file storage and server-only provider adapters |
+| `packages/contracts/src/` | Transport, resource and provider types; common budget calculations |
+| `packages/demo-backend/src/` | Demo fixtures, transactions, resource handlers and execution decisions |
+| `integrations/litellm/`, `vendor/litellm/` | Runtime configuration, source maintenance tools and imported LiteLLM backend |
+| `infra/` | Local dependency services and Terraform for later cloud provisioning |
+| `tests/` | API contracts, browser workflows and full runtime integration |
 
-Publishing uses the existing GitHub Pages `main` → repository-root flow. Run the frontend and infrastructure CI gates before merging changes into `main`; the committed static build is the Pages artifact.
+A single root `package.json` installs and builds the first-party TypeScript code. `index.html` and `assets/console/` are generated and committed for GitHub Pages. Edit source files and rebuild instead of editing those artifacts.
+
+## Working guides
+
+- [Development](docs/development.md): commands, common changes, testing and troubleshooting.
+- [Architecture](docs/architecture.md): ownership, request flow and production boundaries.
+- [API contract](docs/api.md) and [OpenAPI](docs/openapi.json): envelopes, actions, state transitions and backend replacement.
+- [Product scope](docs/product-scope.md): all 25 primary screens and nine workflows.
+- [LiteLLM](integrations/litellm/README.md): fixture setup, live configuration and upstream updates.
+- [Infrastructure](infra/README.md): dependency map and Terraform provisioning sequence.
+
+Before submitting a change, run `npm test`. See the development guide for browser setup and additional runtime gates. [GitHub Actions](https://github.com/DivyanKavdia/Neurofence/actions/workflows/validate.yml) is the current validation record. Terraform defines future dependencies; it has not provisioned a cloud backend.

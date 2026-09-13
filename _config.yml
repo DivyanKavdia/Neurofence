@@ -3,8 +3,8 @@ exclude:
   - integrations
   - infra
   - scripts
-  - src
-  - server
+  - apps
+  - packages
   - tests
   - docs
   - node_modules

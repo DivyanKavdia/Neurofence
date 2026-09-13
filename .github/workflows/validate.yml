@@ -20,7 +20,8 @@ jobs:
         run: |
           test ! -e _site/vendor
           test ! -e _site/integrations
-          test ! -e _site/server
+          test ! -e _site/apps
+          test ! -e _site/packages
           test ! -e _site/infra
           cmp index.html _site/index.html
           cmp config.js _site/config.js

@@ -12,7 +12,7 @@ const mime = {
   ".jpg": "image/jpeg",
   ".png": "image/png",
 };
-createServer(async (req, res) => {
+export const server = createServer(async (req, res) => {
   try {
     const pathname = decodeURIComponent(
       new URL(req.url, "http://localhost").pathname,
@@ -22,6 +22,12 @@ createServer(async (req, res) => {
       "." + (pathname === "/" ? "/index.html" : pathname),
     );
     if (!file.startsWith(root + "/")) throw Error();
+    if (
+      file !== resolve(root, "index.html") &&
+      file !== resolve(root, "config.js") &&
+      !file.startsWith(resolve(root, "assets") + "/")
+    )
+      throw Error();
     const content = await readFile(file);
     res.writeHead(200, {
       "Content-Type": mime[extname(file)] || "application/octet-stream",

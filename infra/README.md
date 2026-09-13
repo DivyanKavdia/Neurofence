@@ -33,7 +33,7 @@ docker compose --env-file infra/local/.env -f infra/local/compose.yaml ps
 
 Published ports bind loopback. Container-to-container hostnames are the service names. Kafka clients on the host use `localhost:9092`; clients in Compose use `kafka:19092`. Create an evidence bucket in the local object-store console at `http://localhost:9001`. The Vault profile is ephemeral development mode. Data volumes persist through `docker compose down`; removing volumes deliberately erases local dependency data.
 
-Image tags identify the initial development versions. Mirror reviewed images and pin digests for releases and disconnected installations. Compose syntax has been parsed; container startup has not been verified here because Docker is unavailable.
+Image tags identify the initial development versions. Mirror reviewed images and pin digests for releases and disconnected installations. Verify container health when using this optional dependency stack; the model fixture has a separate Compose profile and CI gate.
 
 ## Terraform roots and sequence
 
@@ -87,7 +87,7 @@ The [LiteLLM integration guide](../integrations/litellm/README.md) documents its
 
 The pilot defaults to one NAT gateway, a single-AZ database and one ClickHouse replica. Set `single_nat_gateway=false` and `database_multi_az=true` for network/database redundancy. ClickHouse replication, worker autoscaling, production monitoring destinations and per-service egress restrictions remain deployment decisions. EKS node min/max values alone do not install a cluster autoscaler. HTTPS egress is allowed for provider/secret endpoints; restrict it through the chosen egress proxy for production. Network policy starts in VPC CNI standard mode; strict startup enforcement requires cluster-wide DNS/system policies as well.
 
-GitHub CI passes HCL formatting, locked-provider initialization and provider validation for both roots. Both credential-free AWS mock plans pass: the private pilot dependencies and the redundant-network/outbox profile. See the [validation record](../docs/VALIDATION.md) for evidence. Review an account-specific plan before provisioning. No Terraform apply or cloud smoke test has been run.
+GitHub CI checks HCL formatting, locked-provider initialization and provider validation for both roots. It also runs credential-free AWS mock plans for the private pilot dependencies and the redundant-network/outbox profile. See [current workflow results](https://github.com/DivyanKavdia/Neurofence/actions/workflows/validate.yml). Review an account-specific plan before provisioning. No Terraform apply or cloud smoke test has been run.
 
 ```bash
 terraform fmt -check -recursive infra/terraform
