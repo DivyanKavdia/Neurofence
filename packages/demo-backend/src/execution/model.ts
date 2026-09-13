@@ -126,6 +126,9 @@ export async function runModel(
     return (
       p &&
       p.status === "Healthy" &&
+      state.data.models.some(
+        (m) => m.provider === id && m.status === "Approved",
+      ) &&
       (!agent ||
         state.data.models.some(
           (m) =>

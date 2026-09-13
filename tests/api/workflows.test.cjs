@@ -563,3 +563,47 @@ test("New collections migrate into a saved workspace without resetting prior dec
   assert.deepEqual(state.data.distributions, []);
   assert.equal(state.data.tools[0].status, "Blocked");
 });
+
+test("Archived MCP resources and unapproved model catalogs cannot execute", async () => {
+  const f = fixture(),
+    state = await f.read();
+  const agent = state.data.agents.find((a) =>
+    a.allowedTools.includes("claims.read"),
+  );
+  const tool = state.data.tools.find((t) => t.id === "claims.read");
+  const server = state.data.servers.find((s) => s.id === tool.serverId);
+  const run = () =>
+    f.send("/api/v1/runtime/tool", {
+      agent: agent.id,
+      tool: tool.id,
+      args: { claim_id: "CLAIM-1042" },
+    });
+  let changed = await f.send(
+    `/api/v1/servers/${server.id}/status`,
+    { status: "Archived" },
+    server,
+  );
+  assert.equal((await run()).executed, false);
+  await f.send(
+    `/api/v1/servers/${server.id}/status`,
+    { status: "Active" },
+    changed,
+  );
+  f.role("Security admin");
+  await f.send(`/api/v1/tools/${tool.id}/status`, { status: "Archived" }, tool);
+  assert.equal((await run()).executed, false);
+  f.role("Platform admin");
+  for (const model of state.data.models)
+    await f.send(
+      `/api/v1/models/${model.id}/status`,
+      { status: "Archived" },
+      model,
+    );
+  const trace = await f.send("/api/v1/runtime/model", {
+    project: "claims",
+    prompt: "Approved summary",
+    maxTokens: 100,
+  });
+  assert.equal(trace.executed, false);
+  assert.equal(trace.cost, 0);
+});

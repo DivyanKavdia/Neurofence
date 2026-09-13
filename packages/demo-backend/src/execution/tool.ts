@@ -95,7 +95,7 @@ export function runTool(
     return deny("Publish the bound policy first");
   const server = find("servers", str(tool.serverId));
   if (
-    ["Blocked", "Quarantined", "Suspended", "Paused", "Draft"].includes(
+    !["Approved", "Discovered", "Active", "Healthy", "Validated"].includes(
       str(server.status),
     )
   )
@@ -118,11 +118,10 @@ export function runTool(
   )
     return deny("Agent workflow circuit breaker reached");
   if (
-    tool.status === "Blocked" ||
-    tool.status === "Pending" ||
+    !["Approved", "Approval required", "Active"].includes(str(tool.status)) ||
     num(tool.expires, Date.now() + 1) <= Date.now()
   )
-    return deny("Tool permission is blocked, pending or expired");
+    return deny("Tool permission is inactive, pending or expired");
   if (chain.some((a) => !arr(a.allowedTools).includes(tool.id)))
     return deny("This tool is not granted to the agent");
   const args = obj(body.args);
