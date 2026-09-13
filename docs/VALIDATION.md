@@ -13,7 +13,7 @@ Checked on 13 September 2026 for the optional LiteLLM integration.
 | Source revision and dependency image pin | 2,678 imported files verified against the source manifest; dependency image remains pinned |
 | Terraform formatting, provider validation and AWS mock plans | Both roots validated; both AWS mock plans passed in CI |
 | Hardened Compose container fixture | Passed in GitHub CI, including the mobile playground |
-| Integrated source container | Build, source origin and complete runtime test are required CI gates on [PR #3](https://github.com/DivyanKavdia/Neurofence/pull/3) |
+| Integrated source container | Passed in PR and main CI: image build, tracked-source origin, full HTTP flow and mobile playground |
 | Enabled cloud plan/apply and paid provider calls | Not run |
 | GitHub LiteLLM fork | `DivyanKavdia/litellm` verified as a fork of `BerriAI/litellm`; tested commit fetched successfully and source linked |
 
@@ -22,6 +22,8 @@ The actual proxy test used the pinned Python LiteLLM release with a server-confi
 All four jobs passed for commit `ae887001eb66dee66fa477b819e681afe8825bef`: [console, LiteLLM container/mobile integration and Terraform](https://github.com/DivyanKavdia/Neurofence/actions/runs/34745659237). The HTTP regression also verifies distinct storage for scope names that previously collided. The original integration used a submodule; the direct-source follow-up replaces it with tracked files and a Pages exclusion configuration.
 
 The direct-source follow-up imports the backend from the verified fork as regular files, records upstream hashes, and verifies that the runtime imports those files. Its Dockerfile reuses the pinned dependency layer. The complete source-backed HTTP/mobile test passed locally, including request and response checks, token usage, replay protection and metadata retention. Container build, source origin verification and the complete runtime test are CI gates for this follow-up. The entry point also rejected an unrecorded source edit before loading LiteLLM; the original file was restored. The native Rust accelerator is not built or enabled.
+
+All five jobs passed on merged commit `96b1370d50c265d264cb8b8dc98b4769918318e9`: [main CI](https://github.com/DivyanKavdia/Neurofence/actions/runs/34747443950). This includes the Pages packaging gate, which verifies that backend directories are excluded and that the console assets match the committed build. The container logged `/opt/neurofence/vendor/litellm` as its source directory and verified source SHA-256 `795561a262805e20fc158707832749e92248045d589f31b417965f62382e859e`.
 
 The integration guide documents the source/fork workflow, server-only configuration, current prototype boundaries and provisioning sequence. Existing public Pages continues using the browser mock.
 
