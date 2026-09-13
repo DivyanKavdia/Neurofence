@@ -1,0 +1,10 @@
+name                   = "neuralfence"
+environment            = "pilot"
+region                 = "ap-south-1"
+administrator_role_arn = "arn:aws:iam::123456789012:role/NeuralFenceTerraformOperator"
+public_cluster_endpoint = false
+single_nat_gateway     = true
+database_multi_az      = false
+node_desired           = 2
+enable_event_bus       = true
+oidc_provider_url      = "https://identity.example.com/realms/enterprise"
