@@ -45,10 +45,11 @@ async function ready(url, child) {
   throw new Error(`Test service did not become ready: ${url}`);
 }
 (async () => {
-  const upstream = process.env.NF_TEST_LITELLM_BIN
+  const upstream = process.env.NF_TEST_LITELLM_PYTHON || process.env.NF_TEST_LITELLM_BIN
     ? start(
-        process.env.NF_TEST_LITELLM_BIN,
+        process.env.NF_TEST_LITELLM_PYTHON || process.env.NF_TEST_LITELLM_BIN,
         [
+          ...(process.env.NF_TEST_LITELLM_PYTHON ? [resolve("integrations/litellm/run.py")] : []),
           "--config",
           resolve("integrations/litellm/fixture.yaml"),
           "--host",
@@ -161,7 +162,7 @@ async function ready(url, child) {
   }
   console.log(
     JSON.stringify({
-      stack: "NeuralFence HTTP BFF → LiteLLM v1.100.1 fixture",
+      stack: "Neurofence HTTP BFF → integrated LiteLLM v1.100.1 fixture",
       passed: true,
       requestGuardrails: true,
       responseGuardrails: true,

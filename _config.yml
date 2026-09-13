@@ -1,0 +1,17 @@
+exclude:
+  - vendor
+  - integrations
+  - infra
+  - scripts
+  - src
+  - server
+  - tests
+  - docs
+  - node_modules
+  - test-results
+  - playwright-report
+  - README.md
+  - THIRD_PARTY_NOTICES.md
+  - package.json
+  - package-lock.json
+  - tsconfig.json

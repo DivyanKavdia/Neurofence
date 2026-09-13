@@ -24,7 +24,7 @@ npm run mock
 
 Open `http://127.0.0.1:8080`. No database or cloud account is needed for either demo mode.
 
-For the integrated LiteLLM fixture, fork/source build instructions and later live-provider configuration, follow [integrations/litellm/README.md](integrations/litellm/README.md). The source now uses [DivyanKavdia/litellm](https://github.com/DivyanKavdia/litellm), pinned to the tested v1.100.1 commit. The container remains the tested upstream image until a fork image is built and selected by digest. The existing playground can already call the actual LiteLLM proxy, apply request/response checks and record its token usage through the local BFF.
+For the integrated LiteLLM fixture, fork/source build instructions and later live-provider configuration, follow [integrations/litellm/README.md](integrations/litellm/README.md). LiteLLM backend code from [DivyanKavdia/litellm](https://github.com/DivyanKavdia/litellm) is tracked directly in `vendor/litellm`, pinned to the tested v1.100.1 commit. The local container loads that source using a pinned dependency image; it does not require a submodule. The existing playground can already call the actual LiteLLM proxy, apply request/response checks and record its token usage through the local BFF.
 
 ## What is connected
 
@@ -79,7 +79,7 @@ The gate checks TypeScript, builds the console, runs API/HTTP tests and drives b
 | `src/seed.ts`, `src/legacy-fixture.ts` | Demo data and migration from the previous prototype |
 | `server/mock-server.ts` | Optional loopback HTTP BFF with file persistence |
 | `src/provider.ts`, `server/litellm.ts` | Provider execution contract and server-only LiteLLM adapter |
-| `integrations/litellm/`, `vendor/litellm` | Fixture/live configuration, source lock, fork workflow and pinned fork submodule |
+| `integrations/litellm/`, `vendor/litellm` | Fixture/live configuration, source lock, update workflow and directly tracked backend source |
 | `scripts/` | Static build, local server and Terraform output handoff |
 | `index.html`, `config.js`, `assets/console/` | Committed, self-contained static build |
 | `assets/brand/` | Approved identity, font and reusable marks |

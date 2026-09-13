@@ -2,44 +2,36 @@
 
 NeuralFence v0.5 adds a working model execution adapter for LiteLLM v1.100.1. The browser-only Pages console still defaults to its local mock. The optional HTTP BFF can execute a governed model request through LiteLLM, with its result, token usage and gateway decisions displayed in the existing playground and traces.
 
-## Source and fork
+## Source inside Neurofence
 
-`vendor/litellm` uses [DivyanKavdia/litellm](https://github.com/DivyanKavdia/litellm), verified as a fork of `BerriAI/litellm`, and pins the tested v1.100.1 commit `1dba17b10ded12ad0021edb453ba2c54e4637928`. That exact commit was successfully fetched from the fork on 13 September 2026. `source.lock.json` records the fork, upstream repository, release and image digest.
+`vendor/litellm` is an ordinary tracked folder in this repository. A normal clone contains the backend code; no submodule initialization or separate LiteLLM checkout is required. It contains the Python SDK and proxy, the Rust source and supporting metadata from [DivyanKavdia/litellm](https://github.com/DivyanKavdia/litellm), pinned to v1.100.1 commit `1dba17b10ded12ad0021edb453ba2c54e4637928`.
 
-To obtain the linked source and verify its pin, run from this repository:
+The import contains 2,678 files. `source.manifest.json` records their upstream hashes, and `source.lock.json` records the current source digest, fork and dependency image. The root enterprise tree, upstream dashboard build and unrelated examples, tests and deployment scaffolding are excluded. Neurofence owns the console, policy controls and execution receipts. See [third-party notices](../../THIRD_PARTY_NOTICES.md).
+
+The local Dockerfile builds the runtime from this folder. It reuses the tested upstream image by digest for installed dependencies, then the entry point explicitly imports the tracked Python package and verifies its content digest. It stops if the import resolves elsewhere or source content differs from the reviewed lock. The native Rust accelerator is not built or enabled in this Python runtime; its source is retained for later native builds. The dependency image can contain separately licensed enterprise packages; they are not activated by this integration.
 
 ```bash
-git submodule sync -- vendor/litellm
-git submodule update --init --checkout --recursive vendor/litellm
 npm run litellm:source
+docker compose --env-file integrations/litellm/.env -f integrations/litellm/compose.yaml build
 ```
 
-To switch to another fork, run `npm run litellm:source -- --use OWNER/litellm`; the command verifies its parent repository and fetches the pinned commit before linking it. If you need to create another fork, `npm run litellm:fork` supports `GH_TOKEN` supplied through your local credential environment and authorized to create it. Tokens never belong in this repository or the frontend configuration. Review and commit `.gitmodules` and `source.lock.json` after a source switch succeeds.
+To edit the integrated backend, change files under `vendor/litellm`, review the diff, then run `npm run litellm:record`. This updates the content digest while preserving the original upstream hashes. Run the complete integration suite and commit the code and lock together.
 
-The default runtime still uses the tested upstream v1.100.1 image by digest. Linking the fork does not rebuild that image or deploy fork changes. Build the checked-out source and select its resulting image as described below when fork-specific changes are ready.
+For an upstream update, use `npm run litellm:diff -- --revision FULL_COMMIT_SHA` to produce `.runtime/litellm-upstream.patch`. Review it and apply it on a clean branch with `git apply --3way --directory=vendor/litellm .runtime/litellm-upstream.patch`; resolve conflicts explicitly and record the reviewed source. This path preserves local changes and keeps their original baseline. If there are no local patches, `npm run litellm:import -- --revision FULL_COMMIT_SHA` imports a fresh reviewed baseline. The importer refuses to overwrite local patches. Review the release metadata and dependency image when changing versions, then run the full tests.
 
-To build the actual checked-out fork, expand a sparse checkout if necessary and use its upstream Dockerfile:
+The **Import reviewed LiteLLM source** GitHub workflow can import a reviewed commit into a new branch for a pull request. It does not update main. GitHub does not trigger another workflow from its own automation token, so push a reviewed follow-up commit before merging to run the normal CI checks on that branch.
 
-```bash
-git -C vendor/litellm sparse-checkout disable
-docker build -t neuralfence-litellm:1.100.1 vendor/litellm
-```
-
-Set `NF_LITELLM_IMAGE=neuralfence-litellm:1.100.1` when running the local Compose profile. For cloud deployment, publish that image to the reserved `litellm` ECR repository and set `litellm_image` to its immutable registry digest. Upstream Docker builds include their own UI and dependency build stages and can take substantial time. Source builds have not been run in this workspace because Docker is unavailable; CI verifies the pinned upstream image separately.
-
-The submodule defaults to `update=none` so GitHub Pages publishes the web console without recursively copying the provider source tree into the site. The explicit `--checkout` above obtains the source for backend development and fork builds. Source revision checks and the container integration CI do not require that large checkout.
-
-The upstream root license is MIT except the separately licensed `enterprise/` tree. Preserve the source licenses and notices in fork builds. This integration uses the standard model-execution API and does not enable enterprise features; an upstream image may contain enterprise components whose rights are governed separately. See [LICENSE](https://github.com/BerriAI/litellm/blob/v1.100.1/LICENSE).
+GitHub Pages excludes backend source through `_config.yml`; it continues to publish the static Neurofence console.
 
 ## Run without provider keys
 
-The fixture runs the actual LiteLLM proxy with a configured `mock_response`. Synthetic aliases and prices are explicitly marked as fixtures. It makes no external model calls.
+The fixture runs the imported LiteLLM proxy with a configured `mock_response`. Synthetic aliases and prices are explicitly marked as fixtures. It makes no external model calls.
 
 ```bash
 npm ci
 cp integrations/litellm/.env.example integrations/litellm/.env
 # Set the same random local value for LITELLM_MASTER_KEY and LITELLM_API_KEY.
-docker compose --env-file integrations/litellm/.env -f integrations/litellm/compose.yaml up --wait -d
+docker compose --env-file integrations/litellm/.env -f integrations/litellm/compose.yaml up --build --wait -d
 npm run build
 node --env-file=integrations/litellm/.env .runtime/mock-server.cjs
 ```
@@ -69,7 +61,7 @@ The BFF is deliberately serial within one process. Its file store is not a produ
 
 The AWS root now reserves an ECR repository and `litellm-executor` Secrets Manager slot. The optional platform resources are off by default. After the AWS root has been provisioned and reviewed separately, populate that secret with JSON containing `LITELLM_MASTER_KEY` and the provider environment values referenced by your YAML. The existing platform-input helper carries its ARN forward.
 
-To include the private service in a later platform plan, set `enable_litellm=true`, provide `litellm_config_yaml`, and supply `litellm_secret_arn`. Use `litellm_image` to choose a reviewed upstream or fork image digest. The service has a dedicated namespace, two replicas, a ClusterIP, nonroot containers, read-only filesystems and network policies. Only `app=ai-gateway` or `app=control-api` pods in the `neuralfence` namespace may reach port 4000. No public ingress is created. DNS and HTTPS egress are allowed; add your provider egress proxy restrictions and workload IAM roles where required.
+To include the private service in a later platform plan, set `enable_litellm=true`, provide `litellm_config_yaml`, and supply `litellm_secret_arn`. Build the image using the local Dockerfile, publish it to the reserved `litellm` ECR repository, and set `litellm_image` to the resulting immutable digest. Enabling the service requires that explicit image; Terraform has no default upstream runtime image. The service has a dedicated namespace, two replicas, a ClusterIP, nonroot containers, read-only filesystems and network policies. Only `app=ai-gateway` or `app=control-api` pods in the `neuralfence` namespace may reach port 4000. No public ingress is created. DNS and HTTPS egress are allowed; add your provider egress proxy restrictions and workload IAM roles where required.
 
 Terraform copies the secret into a Kubernetes Secret, so its encrypted state must have restricted access. Provider-specific IAM, key rotation/rollout and an account-specific enabled plan still need deployment validation. The prototype BFF is not deployed by this Terraform. No cloud resources were provisioned for this integration.
 
@@ -83,4 +75,4 @@ npm run litellm:source
 NF_TEST_LITELLM_URL=http://127.0.0.1:4000 NF_TEST_BROWSER=1 npm run test:litellm
 ```
 
-The full stack test uses `sk-neuralfence-ci-fixture-only-key` solely as a synthetic local test credential. For a local Python installation of the pinned proxy, set `NF_TEST_LITELLM_BIN` to its `litellm` executable instead; the test starts and stops it automatically. GitHub CI uses the digest-pinned container and checks the mobile playground, guardrails, usage and replay behavior. Unit contract tests cover no-egress denials, residency, token accounting, redirects, errors, timeouts and durable interrupted receipts.
+The full stack test uses `sk-neuralfence-ci-fixture-only-key` solely as a synthetic local test credential. For a local Python environment containing the pinned proxy dependencies, set `NF_TEST_LITELLM_PYTHON` to its Python executable; the test starts and stops the imported source through `run.py`. `NF_TEST_LITELLM_BIN` remains available for testing a separately installed upstream proxy. GitHub CI builds the local Dockerfile, verifies that it loads the tracked source, and checks the mobile playground, guardrails, usage and replay behavior. Unit contract tests cover no-egress denials, residency, token accounting, redirects, errors, timeouts and durable interrupted receipts.

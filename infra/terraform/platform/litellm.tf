@@ -5,10 +5,10 @@ variable "enable_litellm" {
 }
 variable "litellm_image" {
   type        = string
-  default     = "ghcr.io/berriai/litellm:v1.100.1@sha256:a3715fa7ad8387941ab697259bd2881d68931657247a41984f90fae6d11c62bf"
-  description = "Reviewed upstream or fork image, pinned by digest."
+  default     = ""
+  description = "Image built from Neurofence's integrated LiteLLM source, pinned by its published digest."
   validation {
-    condition     = can(regex("@sha256:[a-f0-9]{64}$", var.litellm_image))
+    condition     = var.litellm_image == "" || can(regex("@sha256:[a-f0-9]{64}$", var.litellm_image))
     error_message = "Pin the LiteLLM image by SHA-256 digest."
   }
 }
@@ -74,6 +74,12 @@ resource "kubernetes_config_map_v1" "litellm" {
 }
 resource "kubernetes_manifest" "litellm_deployment" {
   count = var.enable_litellm ? 1 : 0
+  lifecycle {
+    precondition {
+      condition     = var.litellm_image != ""
+      error_message = "Build and publish the integrated backend, then provide its image digest before enabling LiteLLM."
+    }
+  }
   manifest = {
     apiVersion = "apps/v1", kind = "Deployment"
     metadata   = { name = "litellm", namespace = local.litellm_namespace }

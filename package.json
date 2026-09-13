@@ -13,7 +13,9 @@
     "test:api": "node --test tests/backend.test.cjs tests/http.test.cjs tests/litellm.test.cjs",
     "test:litellm": "node tests/litellm-stack.cjs",
     "litellm:source": "node scripts/litellm-source.mjs",
-    "litellm:fork": "node scripts/litellm-source.mjs --create-fork"
+    "litellm:import": "node scripts/litellm-source.mjs import",
+    "litellm:record": "node scripts/litellm-source.mjs record",
+    "litellm:diff": "node scripts/litellm-source.mjs diff"
   },
   "engines": {
     "node": ">=22"

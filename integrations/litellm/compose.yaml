@@ -1,6 +1,10 @@
 services:
   litellm:
-    image: ${NF_LITELLM_IMAGE:-ghcr.io/berriai/litellm:v1.100.1@sha256:a3715fa7ad8387941ab697259bd2881d68931657247a41984f90fae6d11c62bf}
+    image: ${NF_LITELLM_IMAGE:-neurofence-litellm:1.100.1-source}
+    build:
+      context: ../..
+      dockerfile: integrations/litellm/Dockerfile
+    pull_policy: build
     command: ["--config", "/etc/neuralfence/litellm.yaml", "--port", "4000", "--host", "0.0.0.0"]
     environment:
       LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?Set a random server-only key}

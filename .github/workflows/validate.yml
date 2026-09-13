@@ -39,7 +39,13 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - name: Start pinned LiteLLM fixture
+      - name: Build and verify the integrated backend source
+        env:
+          LITELLM_MASTER_KEY: sk-neuralfence-ci-fixture-only-key
+        run: |
+          docker compose -f integrations/litellm/compose.yaml build
+          docker compose -f integrations/litellm/compose.yaml run --rm --no-deps litellm --check-source
+      - name: Start the integrated LiteLLM fixture
         env:
           LITELLM_MASTER_KEY: sk-neuralfence-ci-fixture-only-key
         run: docker compose -f integrations/litellm/compose.yaml up --wait --wait-timeout 120 -d
