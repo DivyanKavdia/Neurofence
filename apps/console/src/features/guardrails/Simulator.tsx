@@ -27,7 +27,7 @@ export function Simulator() {
                 policy,
                 text,
                 draft,
-                stage,
+                stage: stage === "File / OCR" ? "Request" : stage,
               }),
             );
           } catch {}
@@ -50,6 +50,7 @@ export function Simulator() {
               <option>Request</option>
               <option>Response</option>
               <option>Tool arguments</option>
+              <option>Tool result</option>
               <option>File / OCR</option>
             </select>
           </label>
@@ -112,6 +113,14 @@ export function Simulator() {
           <Badge value={result.decision} />
           <p>{str(result.reason)}</p>
           <pre>{str(result.text)}</pre>
+          <details>
+            <summary>Rule matches and offsets</summary>
+            <pre>{JSON.stringify(result.findings, null, 2)}</pre>
+            <p>
+              Offsets use UTF-16 code units. Confidence 1 means an exact fixture
+              or dictionary match, not model confidence.
+            </p>
+          </details>
         </div>
       )}
     </Panel>

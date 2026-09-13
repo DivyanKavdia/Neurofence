@@ -105,7 +105,11 @@ export async function handleWorkspace(ctx: RequestContext) {
       );
     if (body.retention === "Metadata only") body.rawContent = false;
     if (body.rawContent === false)
-      for (const trace of state.data.traces) delete trace.content;
+      for (const trace of state.data.traces)
+        if (!trace.legalHold) {
+          delete trace.content;
+          trace.contentRetained = false;
+        }
     Object.assign(state.settings, body, {
       version: state.settings.version + 1,
     });

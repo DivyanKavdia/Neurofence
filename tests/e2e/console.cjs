@@ -8,7 +8,7 @@ const results = path.join(root, "test-results");
 fs.mkdirSync(results, { recursive: true });
 const screens = {
   "Command center": [],
-  "AI inventory": ["Inventory", "Relationships"],
+  "AI inventory": ["Inventory", "Relationships", "Discovery & risk"],
   "Workforce AI": ["Activity", "Policies"],
   "AI gateway": [
     "Overview",
@@ -26,19 +26,23 @@ const screens = {
     "Tool permissions",
     "Tool playground",
     "Tool traces",
+    "Workflows & delegation",
   ],
   FinOps: [
     "Overview",
     "Budget hierarchy",
     "Usage ledger",
     "Forecast & anomalies",
+    "Prices & reconciliation",
   ],
   Incidents: [],
-  Assurance: ["Red team", "Supply chain"],
+  Assurance: ["Red team", "Supply chain", "Schedules & provenance"],
   Governance: [
     "Approvals",
     "Exceptions",
     "Evidence & compliance",
+    "Evidence lifecycle",
+    "Policy distribution",
     "Audit trail",
     "Integrations",
     "Members",

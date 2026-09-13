@@ -76,3 +76,9 @@ Use [GitHub Actions](https://github.com/DivyanKavdia/Neurofence/actions/workflow
 | A live call reports `OUTCOME_UNKNOWN` | Reconcile the existing trace against provider records before starting another call. See the runtime guide. |
 | LiteLLM refuses to start after a source edit | Review the vendor diff, record the intentional change and run the source/runtime checks. |
 | Browser launch fails | Install Playwright Chromium or set the browser path described above. |
+
+## Extending operational workflows
+
+Keep new page components in their product feature folder. Shared import preview/apply and command forms live in `apps/console/src/features/operations/`. Domain commands live in `packages/demo-backend/src/workflows/` and are routed through `handlers/operations.ts`. Add capability and module checks before reading or mutating domain data; reuse version checks and the shared audit/idempotency transaction.
+
+When adding a collection, extend both `contracts/types.ts` and the additive migration in `context.ts`; never replace existing workspace data. Update [feature coverage](feature-coverage.md) and OpenAPI alongside the implementation. The new workflow API and browser tests are part of `npm test`.

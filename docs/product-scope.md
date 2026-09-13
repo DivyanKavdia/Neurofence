@@ -1,6 +1,6 @@
 # Frontend scope and acceptance map
 
-Implementation baseline: **Enterprise_AI_Trust_Fabric_UI_UX_Functional_Design_v1.docx**, the Native Gateway v2 canonical coding context and the v2 low-level engineering design supplied for this project. This is the frontend plus a stateful demo backend, with optional LiteLLM text-model execution through the local API. All nine product modules are represented through 10 navigation areas, 36 page/tab views, and their detail/editor/review flows.
+Implementation baseline: **Enterprise_AI_Trust_Fabric_UI_UX_Functional_Design_v1.docx**, the Native Gateway v2 canonical coding context and the v2 low-level engineering design supplied for this project. This is the frontend plus a stateful demo backend, with optional LiteLLM text-model execution through the local API. See [feature coverage](feature-coverage.md) for the requirement-level audit and remaining work. All nine product modules are represented through 10 navigation areas, 42 page/tab views, and their detail/editor/review flows.
 
 The 25 primary screens from the UI specification map as follows. API paths below are the implemented BFF paths; some aggregate endpoints deliberately consolidate the service-oriented names in the source design.
 
@@ -30,7 +30,7 @@ The 25 primary screens from the UI specification map as follows. API paths below
 | 22 | Incidents & Findings | Incidents | Cross-module queue, filtering, selection and bulk review; `/incidents` |
 | 23 | Incident Investigation | Open incident | Notes/assignment, trace, contain/revoke, exception, resolve/reopen, evidence; incident actions |
 | 24 | Assurance Center | Assurance → Red team / Supply chain | Targets, test pack/artifact/provenance, job progress, findings, remediation, retest, release gate; `/campaigns`, `/scans`, `/jobs` |
-| 25 | Governance, Compliance & Administration | Governance → eight tabs | Approvals, exceptions, evidence export, audit, integrations, members, entitlements, deployment/retention settings, role matrix |
+| 25 | Governance, Compliance & Administration | Governance → ten tabs | Approvals, exceptions, evidence export, audit, integrations, members, entitlements, deployment/retention settings, role matrix |
 
 ## Nine end-to-end journeys
 
@@ -59,8 +59,10 @@ Use **Explore workflows** for entry points and suggested roles. API tests exerci
 
 ## Deliberate simulation boundaries
 
-Provider onboarding/health/discovery, default demo responses, credentials, tool execution/auth brokerage, workforce collection, detector/OCR behavior, assurance scans, risk/forecasts and evidence integrity are synthetic. The simulator imports text and accepts PDF/image files using a labeled OCR fixture; real extraction and scanner execution belong to future backend adapters. Independent review and canary behavior run against mock state; there are no cryptographically signed bundles. A canary uses deterministic request allocation for policies/routes/budgets. The sample cost ledger uses INR and representative prices, not live exchange rates.
+Provider onboarding/health/discovery, default responses, credentials, tool execution/auth brokerage, workforce collection and assurance scans are synthetic. Risk scoring is deterministic and configurable; forecasts remain heuristic. Evidence exports and policy bundles have actual SHA-256 integrity hashes but no signatures. Detectors use patterns and literal dictionaries. The simulator imports text and accepts PDF/image files using a labeled OCR fixture; real extraction and scanner execution belong to future backend adapters. Independent review and canary behavior run against mock state; there are no cryptographically signed bundles. A canary uses deterministic request allocation for policies/routes/budgets. The sample cost ledger uses INR and representative prices, not live exchange rates.
 
-Free-form exception approval records review evidence; it does not automatically bypass runtime controls. MCP and budget execution approvals have explicit request fingerprints and enforceable single-use behavior. The local LiteLLM path persists model execution receipts and inspects actual text responses. Production auth, distributed transactions and reservations, durable shared receipts, provider-charge reconciliation, retention deletion, real event streams and package/model verification remain backend work. See the [architecture](architecture.md) for the runtime boundary.
+Free-form exception approval records review evidence; it does not automatically bypass runtime controls. MCP and budget execution approvals have explicit request fingerprints and enforceable single-use behavior. The local LiteLLM path persists model execution receipts and inspects actual text responses. Production auth, distributed transactions and reservations, durable shared receipts, automated provider-charge retrieval, durable storage retention, real event streams and package/model verification remain backend work. See the [architecture](architecture.md) for the runtime boundary.
+
+Invoice adjustments, evidence holds and reviewed trace-content purges now run against the shared demo store. Purging preserves ledger/receipt/audit metadata. Scheduled campaigns run on polling, and policy bundle acknowledgement enforcement is activated by building the first bundle.
 
 The browser uses a scoped aggregate read for the finite demo dataset; the BFF also exposes filtered/sorted/cursor list endpoints for the production adapter. See [API handoff](api.md) and [infrastructure instructions](../infra/README.md).

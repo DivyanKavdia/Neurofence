@@ -16,6 +16,8 @@ import { completeJobs } from "./execution/jobs";
 import { handleApprovals } from "./handlers/approvals";
 import { handleControls } from "./handlers/controls";
 import { handleIncidents } from "./handlers/incidents";
+import { handleOperations } from "./handlers/operations";
+import { refreshRisk } from "./workflows/inventory";
 import { handleRuntime } from "./handlers/runtime";
 import { handleTraceActions } from "./handlers/traces";
 import { handleWorkspace } from "./handlers/workspace";
@@ -36,6 +38,9 @@ export async function dispatch(
   const replay = replayReceipt(ctx);
   if (replay) return replay;
   completeJobs(ctx.state, ctx.audit);
+  refreshRisk(ctx.state);
+  const operation = await handleOperations(ctx);
+  if (operation) return operation;
   const workspace = await handleWorkspace(ctx);
   if (workspace) return workspace;
   const runtime = await handleRuntime(ctx);

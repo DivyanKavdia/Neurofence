@@ -1,3 +1,5 @@
+import { agentLimit } from "./authority";
+import { distributionFailure } from "../workflows/distribution";
 import { createTrace } from "./trace";
 
 import { budgetSpend } from "@neurofence/contracts/ledger";
@@ -7,6 +9,7 @@ import {
 } from "@neurofence/contracts/provider";
 import {
   Collection,
+  arr,
   Json,
   num,
   round,
@@ -47,6 +50,30 @@ export async function runModel(
     stage("Execution stopped", reason, "Blocked");
     return trace;
   };
+  const distributionError = distributionFailure(state);
+  if (distributionError) return deny(distributionError);
+  const agent = body.agent ? find("agents", str(body.agent)) : undefined;
+  if (agent) {
+    trace.agent = agent.id;
+    trace.workflow = agent.workflow;
+    if (agent.project !== project.id)
+      return deny("Agent belongs to another application");
+    if (providerConnector)
+      return deny(
+        "Agent model grants currently execute in the mock runtime; operator model binding is required for live execution",
+      );
+    const limit = agentLimit(
+      state,
+      agent,
+      session.environment,
+      trace.workflow,
+      0,
+      true,
+    );
+    if (limit) return deny(limit);
+  }
+  if (project.keyExpires && num(project.keyExpires) <= Date.now())
+    return deny("Application credential expired");
   if (project.status !== "Active" || project.keyStatus !== "Active")
     return deny("Application or virtual credential is inactive");
   stage("Identity", `${project.name} · ${session.user}`);
@@ -91,6 +118,7 @@ export async function runModel(
   const inspection = inspect(text, policy, state);
   trace.preview = mask(inspection.text);
   trace.signals = inspection.signals;
+  trace.findings = inspection.findings;
   stage("Request guardrails", inspection.reason, inspection.decision);
   if (inspection.decision === "DENY") return deny(inspection.reason);
   const eligible = (id: string) => {
@@ -98,6 +126,16 @@ export async function runModel(
     return (
       p &&
       p.status === "Healthy" &&
+      state.data.models.some(
+        (m) => m.provider === id && m.status === "Approved",
+      ) &&
+      (!agent ||
+        state.data.models.some(
+          (m) =>
+            m.provider === id &&
+            m.status === "Approved" &&
+            arr(agent.allowedModels).includes(m.id),
+        )) &&
       (!providerConnector ||
         (providerConnector.eligible(id, session, str(policy.region)) &&
           state.data.models.some(
@@ -159,6 +197,18 @@ export async function runModel(
     if (blocked.budgetId)
       budgetApproval(state, session, project, trace, body, blocked.budgetId);
     return trace;
+  }
+  if (agent) {
+    const limit = agentLimit(
+      state,
+      agent,
+      session.environment,
+      trace.workflow,
+      estimate,
+      true,
+    );
+    if (limit) return deny(limit);
+    agent.stepsUsed = num(agent.stepsUsed) + 1;
   }
   if (blocked.notify)
     stage("Budget notification", "The configured threshold alert was recorded");
@@ -273,7 +323,9 @@ export async function runModel(
       output,
       { ...policy, pii: policy.responseAction || policy.pii },
       state,
+      "Response",
     );
+    trace.responseFindings = response.findings;
     stage("Response guardrails", response.reason, response.decision);
     if (response.decision === "DENY") {
       trace.decision = "DENY";

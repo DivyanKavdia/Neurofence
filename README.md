@@ -4,7 +4,7 @@ Neurofence is an enterprise AI security and governance workspace. It brings mode
 
 The React frontend has a stateful demo backend for working through the product flows. An optional local API connects the model playground to the LiteLLM backend source included in this repository.
 
-[Open the demo](https://divyankavdia.github.io/Neurofence/) · [Product scope](docs/product-scope.md) · [Architecture](docs/architecture.md)
+[Open the demo](https://divyankavdia.github.io/Neurofence/) · [Product scope](docs/product-scope.md) · [Feature coverage](docs/feature-coverage.md) · [Architecture](docs/architecture.md)
 
 ![Command center](docs/screenshots/command-center.png)
 
@@ -18,6 +18,12 @@ npm run dev
 ```
 
 Open `http://127.0.0.1:8000`. Source changes rebuild automatically; refresh the browser to see them. Demo records persist in browser storage. Use **Explore workflows** for guided journeys and the profile menu to try another role or reviewer.
+
+## Explore the working flows
+
+Use the module tabs for discovery imports and explainable risk, agent delegation and result inspection, price/usage imports and invoice reconciliation, evidence holds and control mappings, policy bundle acknowledgements, and scheduled assurance with provenance review. The help menu explains each area; the action queue collects pending approvals, incidents and jobs.
+
+The [feature coverage audit](docs/feature-coverage.md) maps all 102 functional requirements to working demo behavior, partial implementations or remaining gaps. This includes explicit gaps such as production SSO, live MCP brokerage, caching and streaming.
 
 ## Choose a run mode
 

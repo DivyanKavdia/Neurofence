@@ -103,3 +103,7 @@ The AWS test file uses mock providers and `command = plan`; it does not provisio
 References: [Terraform validation](https://developer.hashicorp.com/terraform/cli/commands/validate), [mock provider tests](https://developer.hashicorp.com/terraform/language/tests/mocking), [EKS network policy configuration](https://docs.aws.amazon.com/eks/latest/userguide/cni-network-policy-configure.html).
 
 The LiteLLM runtime image is built from the backend source tracked in `vendor/litellm`, using `integrations/litellm/Dockerfile`. Publish that image and supply its digest as `litellm_image` before enabling the optional service. Terraform does not silently select an upstream executable image.
+
+## Consumers introduced by the feature workflows
+
+Discovery imports/risk, price versions, usage imports, invoice adjustments, control mappings and bundle acknowledgements will share the existing PostgreSQL/outbox dependency. Scheduled assurance and provenance checks will consume the existing Kafka/worker boundary. Content holds/purges need the existing S3 versioning/retention and KMS boundary with transactional custody metadata. No new managed service is required by the current dummy-backend implementation; these application workers are not yet deployed by Terraform. Preserve ledger/receipt records when implementing content retention.

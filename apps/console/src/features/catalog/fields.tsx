@@ -97,6 +97,12 @@ export function fieldsFor(
       reference("route", "Model route", "routes"),
       reference("policy", "Guardrail policy", "policies"),
       reference("budget", "Budget", "budgets"),
+      { key: "costCenter", label: "Cost center", default: "Unallocated" },
+      {
+        key: "keyExpires",
+        label: "Optional credential expiry",
+        type: "datetime",
+      },
     ],
     routes: [
       name,
@@ -195,6 +201,22 @@ export function fieldsFor(
       count("maxSteps", "Workflow call limit", 20),
       count("maxDuration", "Workflow duration (seconds)", 3600),
       count("maxDepth", "Maximum delegation depth", 3),
+      count("maxCost", "Workflow cost cap (INR)", 10, 0),
+      count("maxModelCalls", "Workflow model-call limit", 10, 0),
+      {
+        key: "allowedModels",
+        label: "Allowed models",
+        type: "multi",
+        options: resourceOptions(state, "models"),
+        default: [],
+      },
+      {
+        key: "allowedDelegates",
+        label: "Allowed delegate agents (same application)",
+        type: "multi",
+        options: resourceOptions(state, "agents"),
+        default: [],
+      },
     ],
     servers: [
       name,
@@ -249,6 +271,13 @@ export function fieldsFor(
       },
     ],
     assets: [
+      choice("classification", "Data classification", [
+        "Unknown",
+        "Public",
+        "Internal",
+        "Confidential",
+        "Restricted",
+      ]),
       name,
       choice("type", "Asset type", [
         "Application",

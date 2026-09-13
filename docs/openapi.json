@@ -3,7 +3,7 @@
   "info": {
     "title": "NeuralFence dummy control BFF",
     "version": "0.5.0",
-    "description": "Development simulation only. X-Demo-* headers select a demo session and are not authentication. The default runtime is synthetic; the local API can optionally execute governed text-model requests through LiteLLM. See docs/api.md for the production adapter boundary."
+    "description": "Development simulation only. X-Demo-* headers select a demo session and are not authentication. The default runtime is synthetic; the local API can optionally execute governed text-model requests through LiteLLM. See docs/api.md for the production adapter boundary. Includes normalized inventory/usage imports, dictionary inspection, workflow authority, evidence custody, policy distribution and assurance lifecycle commands."
   },
   "servers": [
     {
@@ -760,6 +760,1457 @@
         },
         "description": "Actions depend on collection and capability. See docs/api.md. Decision requires Review fields; containment, deletion, review and rollback require a reason."
       }
+    },
+    "/api/v1/operations/inventory/preview": {
+      "post": {
+        "operationId": "operation_inventory_preview",
+        "summary": "Preview an atomic normalized asset batch",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "entries": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "externalId": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "Application",
+                            "Agent",
+                            "Model",
+                            "Dataset",
+                            "MCP server",
+                            "Tool"
+                          ]
+                        },
+                        "classification": {
+                          "type": "string",
+                          "enum": [
+                            "Unknown",
+                            "Public",
+                            "Internal",
+                            "Confidential",
+                            "Restricted"
+                          ]
+                        },
+                        "owner": {
+                          "type": "string"
+                        },
+                        "links": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "maxItems": 250
+                        },
+                        "components": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          },
+                          "maxItems": 200
+                        }
+                      },
+                      "required": [
+                        "externalId",
+                        "name",
+                        "type"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 250
+                  }
+                },
+                "required": [
+                  "source",
+                  "entries"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/inventory/import": {
+      "post": {
+        "operationId": "operation_inventory_import",
+        "summary": "Import assets by stable source and external ID, preserving reviewed ownership",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "entries": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "externalId": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "Application",
+                            "Agent",
+                            "Model",
+                            "Dataset",
+                            "MCP server",
+                            "Tool"
+                          ]
+                        },
+                        "classification": {
+                          "type": "string",
+                          "enum": [
+                            "Unknown",
+                            "Public",
+                            "Internal",
+                            "Confidential",
+                            "Restricted"
+                          ]
+                        },
+                        "owner": {
+                          "type": "string"
+                        },
+                        "links": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "maxItems": 250
+                        },
+                        "components": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          },
+                          "maxItems": 200
+                        }
+                      },
+                      "required": [
+                        "externalId",
+                        "name",
+                        "type"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 250
+                  }
+                },
+                "required": [
+                  "source",
+                  "entries"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/inventory/weights": {
+      "post": {
+        "operationId": "operation_inventory_weights",
+        "summary": "Update risk weights totaling 100; If-Match is the settings version",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "protection": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ownership": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "classification": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "approval": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "protection",
+                  "ownership",
+                  "classification",
+                  "approval"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/finops/price": {
+      "post": {
+        "operationId": "operation_finops_price",
+        "summary": "Publish an immutable effective INR price per million tokens",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "model": {
+                    "type": "string"
+                  },
+                  "effectiveAt": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8640000000000000.0
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "INR"
+                    ]
+                  },
+                  "inputRate": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1000000000000.0
+                  },
+                  "outputRate": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1000000000000.0
+                  },
+                  "cacheRate": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1000000000000.0
+                  },
+                  "reasoningRate": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1000000000000.0
+                  }
+                },
+                "required": [
+                  "model",
+                  "effectiveAt",
+                  "currency",
+                  "inputRate",
+                  "outputRate",
+                  "cacheRate",
+                  "reasoningRate"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/finops/usage-preview": {
+      "post": {
+        "operationId": "operation_finops_usage_preview",
+        "summary": "Preview external usage without posting charges",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "entries": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "externalId": {
+                          "type": "string"
+                        },
+                        "project": {
+                          "type": "string"
+                        },
+                        "model": {
+                          "type": "string"
+                        },
+                        "ts": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 8640000000000000.0
+                        },
+                        "inputTokens": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000.0
+                        },
+                        "outputTokens": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000.0
+                        },
+                        "cacheTokens": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000.0
+                        },
+                        "reasoningTokens": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000.0
+                        },
+                        "costCenter": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "externalId",
+                        "project",
+                        "model",
+                        "ts"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 250
+                  }
+                },
+                "required": [
+                  "source",
+                  "entries"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/finops/usage-import": {
+      "post": {
+        "operationId": "operation_finops_usage_import",
+        "summary": "Post disjoint token categories using stable external IDs and effective prices",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "entries": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "externalId": {
+                          "type": "string"
+                        },
+                        "project": {
+                          "type": "string"
+                        },
+                        "model": {
+                          "type": "string"
+                        },
+                        "ts": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 8640000000000000.0
+                        },
+                        "inputTokens": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000.0
+                        },
+                        "outputTokens": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000.0
+                        },
+                        "cacheTokens": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000.0
+                        },
+                        "reasoningTokens": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000000.0
+                        },
+                        "costCenter": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "externalId",
+                        "project",
+                        "model",
+                        "ts"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 250
+                  }
+                },
+                "required": [
+                  "source",
+                  "entries"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/finops/reconcile": {
+      "post": {
+        "operationId": "operation_finops_reconcile",
+        "summary": "Reconcile total invoice cost without replaying an upstream request",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "trace": {
+                    "type": "string"
+                  },
+                  "cost": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1000000000000.0
+                  },
+                  "invoice": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "trace",
+                  "cost",
+                  "invoice",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/evidence/hold": {
+      "post": {
+        "operationId": "operation_evidence_hold",
+        "summary": "Place a hold on existing retained evidence",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "trace": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "trace",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/evidence/release": {
+      "post": {
+        "operationId": "operation_evidence_release",
+        "summary": "Release evidence custody hold with an audited reason",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "trace": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "trace",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/evidence/retention-preview": {
+      "post": {
+        "operationId": "operation_evidence_retention_preview",
+        "summary": "Return eligible trace metadata and a stale-safe purge token",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/evidence/purge": {
+      "post": {
+        "operationId": "operation_evidence_purge",
+        "summary": "Purge reviewed expired content while preserving holds, billing and audit metadata",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/evidence/control": {
+      "post": {
+        "operationId": "operation_evidence_control",
+        "summary": "Create or update control-to-evidence mapping; existing ID requires If-Match",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Required when updating an existing ID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "framework": {
+                    "type": "string"
+                  },
+                  "owner": {
+                    "type": "string"
+                  },
+                  "requirement": {
+                    "type": "string"
+                  },
+                  "references": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 100
+                  }
+                },
+                "required": [
+                  "name",
+                  "framework",
+                  "owner",
+                  "requirement",
+                  "references"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/evidence/export": {
+      "post": {
+        "operationId": "operation_evidence_export",
+        "summary": "Export scoped mapped metadata with SHA-256 manifest",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "control": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "control"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/distribution/build": {
+      "post": {
+        "operationId": "operation_distribution_build",
+        "summary": "Build the latest bundle and enable acknowledgement enforcement",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ttl": {
+                    "type": "integer",
+                    "minimum": 60,
+                    "maximum": 86400
+                  }
+                },
+                "required": [
+                  "ttl"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/distribution/acknowledge": {
+      "post": {
+        "operationId": "operation_distribution_acknowledge",
+        "summary": "Verify latest bundle integrity and record a simulated delivery result",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bundle": {
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "success",
+                      "failure"
+                    ]
+                  }
+                },
+                "required": [
+                  "bundle",
+                  "outcome"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/detectors/save": {
+      "post": {
+        "operationId": "operation_detectors_save",
+        "summary": "Create or update literal dictionary; existing ID requires If-Match",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Required when updating an existing ID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "terms": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 100
+                    },
+                    "maxItems": 100
+                  },
+                  "stages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "Request",
+                        "Response",
+                        "Tool arguments",
+                        "Tool result"
+                      ]
+                    },
+                    "maxItems": 4
+                  }
+                },
+                "required": [
+                  "name",
+                  "terms",
+                  "stages"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/assurance/schedule": {
+      "post": {
+        "operationId": "operation_assurance_schedule",
+        "summary": "Set a campaign cadence and next run, driven by workspace polling",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "schedule": {
+                    "type": "string",
+                    "enum": [
+                      "Manual",
+                      "Daily",
+                      "Weekly"
+                    ]
+                  },
+                  "nextRunAt": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8640000000000000.0
+                  }
+                },
+                "required": [
+                  "id",
+                  "schedule"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/assurance/provenance": {
+      "post": {
+        "operationId": "operation_assurance_provenance",
+        "summary": "Record artifact metadata; changes quarantine and invalidate its gate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "digest": {
+                    "type": "string",
+                    "pattern": "^[a-fA-F0-9]{64}$"
+                  },
+                  "publisher": {
+                    "type": "string"
+                  },
+                  "license": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "digest",
+                  "publisher",
+                  "license"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/prices": {
+      "get": {
+        "operationId": "list_prices",
+        "summary": "Read scoped prices; mutations use workflow commands",
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/controls": {
+      "get": {
+        "operationId": "list_controls",
+        "summary": "Read scoped controls; mutations use workflow commands",
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/distributions": {
+      "get": {
+        "operationId": "list_distributions",
+        "summary": "Read scoped distributions; mutations use workflow commands",
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -887,6 +2338,10 @@
           "concurrency": {
             "type": "integer",
             "minimum": 1
+          },
+          "agent": {
+            "type": "string",
+            "description": "Optional agent ID; currently accepted only by mock execution, where grants and workflow limits apply."
           }
         },
         "required": [
@@ -906,6 +2361,21 @@
           "args": {
             "type": "object",
             "additionalProperties": true
+          },
+          "delegates": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8
+          },
+          "responsePreset": {
+            "type": "string",
+            "enum": [
+              "safe",
+              "pii",
+              "injection"
+            ]
           }
         },
         "required": [
@@ -932,7 +2402,7 @@
               "Request",
               "Response",
               "Tool arguments",
-              "File / OCR"
+              "Tool result"
             ]
           }
         },

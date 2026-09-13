@@ -53,6 +53,11 @@ export function validate(
     reference("policy", "policies");
     reference("budget", "budgets");
     requireValue(str(body.owner).trim(), "An owner is required.");
+    if (body.keyExpires)
+      requireValue(
+        num(body.keyExpires) > Date.now(),
+        "Credential expiry must be in the future.",
+      );
   }
   if (collection === "routes") {
     reference("primary", "providers");
@@ -108,6 +113,42 @@ export function validate(
   }
   if (collection === "agents") {
     reference("project", "projects");
+    for (const key of ["maxCost", "maxModelCalls"])
+      if (body[key] !== undefined)
+        requireValue(
+          typeof body[key] === "number" &&
+            num(body[key]) >= 0 &&
+            Number.isFinite(body[key]),
+          `${key} must be nonnegative.`,
+        );
+    if (body.maxModelCalls !== undefined)
+      requireValue(
+        Number.isInteger(body.maxModelCalls),
+        "Model-call limit must be an integer.",
+      );
+    requireValue(
+      arr(body.allowedModels).every((id) =>
+        state.data.models.some((m) => m.id === id && m.status === "Approved"),
+      ),
+      "Choose approved models.",
+    );
+    requireValue(
+      arr(body.allowedDelegates).every(
+        (delegate) =>
+          delegate !== id &&
+          state.data.agents.some(
+            (a) => a.id === delegate && a.project === body.project,
+          ),
+      ),
+      "Delegates must be other agents in the same application.",
+    );
+    if (body.environment)
+      requireValue(
+        ["Development", "Staging", "Production"].includes(
+          str(body.environment),
+        ),
+        "Choose a supported environment.",
+      );
     requireValue(
       str(body.purpose).trim().length >= 5,
       "Declare the agent purpose.",

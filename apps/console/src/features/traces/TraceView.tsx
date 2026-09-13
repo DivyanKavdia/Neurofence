@@ -64,6 +64,22 @@ export function TraceView({ trace }: { trace: Row }) {
           </div>
         ))}
       </div>
+      {(arr(trace.findings).length > 0 ||
+        arr(trace.responseFindings).length > 0) && (
+        <details>
+          <summary>Inspection evidence</summary>
+          <pre>
+            {JSON.stringify(
+              {
+                request: trace.findings || [],
+                response: trace.responseFindings || [],
+              },
+              null,
+              2,
+            )}
+          </pre>
+        </details>
+      )}
       {trace.output && (
         <div className="response-box">
           <strong>Response</strong>

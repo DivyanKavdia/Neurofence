@@ -32,6 +32,7 @@ import { navigation } from "./navigation";
 import { Page } from "./Page";
 import { readRoute, slugify } from "./router";
 import { SessionDialog } from "./SessionDialog";
+import { ActionQueue, WorkspaceHelp } from "./WorkspaceAssistance";
 import { TimeScope } from "./TimeScope";
 
 export function App() {
@@ -83,8 +84,14 @@ export function App() {
     setMenu(false);
   }, []);
   useEffect(() => {
-    if (state?.data.jobs.some((j) => j.status === "Running")) {
-      const timer = setInterval(() => void refresh(), 500);
+    if (
+      state?.data.jobs.some((j) => j.status === "Running") ||
+      state?.data.campaigns.some((c) => c.scheduleEnabled)
+    ) {
+      const timer = setInterval(
+        () => void refresh(),
+        state.data.jobs.some((j) => j.status === "Running") ? 500 : 15000,
+      );
       return () => clearInterval(timer);
     }
   }, [state, refresh]);
@@ -367,6 +374,22 @@ export function App() {
                 <span>Search workspace</span>
                 <kbd>⌘ K</kbd>
               </button>
+              <button
+                className="icon-button workspace-shortcut"
+                aria-label="Workspace action queue"
+                title="Action queue"
+                onClick={() => setModal(<ActionQueue />)}
+              >
+                <Icon name="activity" />
+              </button>
+              <button
+                className="icon-button workspace-shortcut"
+                aria-label="Contextual help"
+                title="Help"
+                onClick={() => setModal(<WorkspaceHelp />)}
+              >
+                <span aria-hidden="true">?</span>
+              </button>
               <label className="period-control">
                 <span className="sr-only">Time range</span>
                 <select
@@ -405,6 +428,14 @@ export function App() {
                   setModal(
                     <>
                       <SessionDialog />
+                      <div className="row wrap">
+                        <Button onClick={() => setModal(<ActionQueue />)}>
+                          Workspace action queue
+                        </Button>
+                        <Button onClick={() => setModal(<WorkspaceHelp />)}>
+                          Contextual help
+                        </Button>
+                      </div>
                       <Button
                         onClick={() => {
                           setSignedOut(true);

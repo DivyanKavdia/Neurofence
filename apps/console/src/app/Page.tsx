@@ -1,3 +1,9 @@
+import { Discovery } from "../features/inventory/Discovery";
+import { FinOpsOperations } from "../features/finops/FinOpsOperations";
+import { EvidenceLifecycle } from "../features/governance/EvidenceLifecycle";
+import { PolicyDistribution } from "../features/governance/PolicyDistribution";
+import { AgentWorkflows } from "../features/agents/AgentWorkflows";
+import { AssuranceOperations } from "../features/assurance/AssuranceOperations";
 import { str } from "@neurofence/contracts/types";
 import { DataTable } from "../components/DataTable";
 import { Empty } from "../components/feedback";
@@ -29,6 +35,7 @@ export function Page({ focusId }: { focusId?: string }) {
     case "overview":
       return <Overview />;
     case "inventory":
+      if (tab === "Discovery & risk") return <Discovery />;
       return tab === "Relationships" ? (
         <div className="stack">
           {state.data.assets.slice(0, 8).map((row) => (
@@ -180,6 +187,7 @@ export function Page({ focusId }: { focusId?: string }) {
         </>
       );
     case "agents":
+      if (tab === "Workflows & delegation") return <AgentWorkflows />;
       if (tab === "Agents")
         return (
           <Catalog
@@ -218,12 +226,14 @@ export function Page({ focusId }: { focusId?: string }) {
         return <Playground kind="tool" focusId={focusId} />;
       return <Traces kind="tool" />;
     case "budgets":
+      if (tab === "Prices & reconciliation") return <FinOpsOperations />;
       if (tab === "Budget hierarchy") return <BudgetTree />;
       if (tab === "Usage ledger") return <Traces />;
       return <FinOps forecast={tab === "Forecast & anomalies"} />;
     case "incidents":
       return <Incidents />;
     case "assurance":
+      if (tab === "Schedules & provenance") return <AssuranceOperations />;
       return (
         <Catalog
           collection={tab === "Supply chain" ? "scans" : "campaigns"}
@@ -241,6 +251,8 @@ export function Page({ focusId }: { focusId?: string }) {
         />
       );
     case "governance":
+      if (tab === "Evidence lifecycle") return <EvidenceLifecycle />;
+      if (tab === "Policy distribution") return <PolicyDistribution />;
       if (tab === "Approvals") return <Approvals />;
       if (tab === "Exceptions")
         return (
