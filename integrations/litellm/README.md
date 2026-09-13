@@ -4,17 +4,19 @@ NeuralFence v0.5 adds a working model execution adapter for LiteLLM v1.100.1. Th
 
 ## Source and fork
 
-`vendor/litellm` pins upstream commit `1dba17b10ded12ad0021edb453ba2c54e4637928`. `source.lock.json` records the repository, release and image digest. The GitHub fork is not created yet: the connected repository tools do not expose that operation.
+`vendor/litellm` uses [DivyanKavdia/litellm](https://github.com/DivyanKavdia/litellm), verified as a fork of `BerriAI/litellm`, and pins the tested v1.100.1 commit `1dba17b10ded12ad0021edb453ba2c54e4637928`. That exact commit was successfully fetched from the fork on 13 September 2026. `source.lock.json` records the fork, upstream repository, release and image digest.
 
-Create [your LiteLLM fork](https://github.com/BerriAI/litellm/fork), then from this repository run:
+To obtain the linked source and verify its pin, run from this repository:
 
 ```bash
+git submodule sync -- vendor/litellm
 git submodule update --init --checkout --recursive vendor/litellm
-npm run litellm:source -- --use DivyanKavdia/litellm
 npm run litellm:source
 ```
 
-Alternatively, with `GH_TOKEN` supplied through your local credential environment and authorized to create a fork, `npm run litellm:fork` creates it and updates the source URL. Tokens never belong in this repository or the frontend configuration. Review and commit `.gitmodules` and `source.lock.json` after the script succeeds.
+To switch to another fork, run `npm run litellm:source -- --use OWNER/litellm`; the command verifies its parent repository and fetches the pinned commit before linking it. If you need to create another fork, `npm run litellm:fork` supports `GH_TOKEN` supplied through your local credential environment and authorized to create it. Tokens never belong in this repository or the frontend configuration. Review and commit `.gitmodules` and `source.lock.json` after a source switch succeeds.
+
+The default runtime still uses the tested upstream v1.100.1 image by digest. Linking the fork does not rebuild that image or deploy fork changes. Build the checked-out source and select its resulting image as described below when fork-specific changes are ready.
 
 To build the actual checked-out fork, expand a sparse checkout if necessary and use its upstream Dockerfile:
 

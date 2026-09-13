@@ -14,11 +14,13 @@ Checked on 13 September 2026 for the optional LiteLLM integration.
 | Terraform formatting, provider validation and AWS mock plans | Both roots validated; both AWS mock plans passed in CI |
 | Hardened Compose container fixture | Passed in GitHub CI, including the mobile playground |
 | Fork-source Docker build, enabled cloud plan/apply, paid provider calls | Not run |
-| GitHub LiteLLM fork | Pending creation; connector lacks the fork operation |
+| GitHub LiteLLM fork | `DivyanKavdia/litellm` verified as a fork of `BerriAI/litellm`; tested commit fetched successfully and source linked |
 
 The actual proxy test used the pinned Python LiteLLM release with a server-configured fixture response, so no provider credentials or paid inference were needed. It is distinct from the HTTP contract tests, which use a local protocol fixture. GitHub CI additionally exercises the digest-pinned container with the same restrictions as the optional Kubernetes workload.
 
 All four jobs passed for commit `ae887001eb66dee66fa477b819e681afe8825bef`: [console, LiteLLM container/mobile integration and Terraform](https://github.com/DivyanKavdia/Neurofence/actions/runs/34745659237). The HTTP regression also verifies distinct storage for scope names that previously collided. GitHub Pages excludes the provider checkout through the submodule's explicit-update configuration; backend developers obtain it with `--checkout`.
+
+The fork follow-up changes the source repository URL and documentation while retaining the exact tested source commit and runtime image digest. The source check verifies the gitlink and lock file agree, and the fork-switch command verified the parent repository and fetched the pinned commit. A fork-source image has not been built or deployed.
 
 The integration guide documents the source/fork workflow, server-only configuration, current prototype boundaries and provisioning sequence. Existing public Pages continues using the browser mock.
 

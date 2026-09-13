@@ -1,5 +1,5 @@
 [submodule "vendor/litellm"]
 	path = vendor/litellm
-	url = https://github.com/BerriAI/litellm.git
+	url = https://github.com/DivyanKavdia/litellm.git
 	update = none
 	shallow = true
