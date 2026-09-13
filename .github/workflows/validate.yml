@@ -7,6 +7,24 @@ on:
 permissions:
   contents: read
 jobs:
+  pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+      - name: Verify the site excludes backend source and preserves the console
+        run: |
+          test ! -e _site/vendor
+          test ! -e _site/integrations
+          test ! -e _site/server
+          test ! -e _site/infra
+          cmp index.html _site/index.html
+          cmp config.js _site/config.js
+          diff -rq assets/console _site/assets/console
   console:
     runs-on: ubuntu-latest
     timeout-minutes: 15

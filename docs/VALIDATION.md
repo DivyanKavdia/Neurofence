@@ -13,14 +13,15 @@ Checked on 13 September 2026 for the optional LiteLLM integration.
 | Source revision and dependency image pin | 2,678 imported files verified against the source manifest; dependency image remains pinned |
 | Terraform formatting, provider validation and AWS mock plans | Both roots validated; both AWS mock plans passed in CI |
 | Hardened Compose container fixture | Passed in GitHub CI, including the mobile playground |
-| Integrated source container, enabled cloud plan/apply, paid provider calls | Container validation pending for this follow-up; cloud and paid calls not run |
+| Integrated source container | Build, source origin and complete runtime test are required CI gates on [PR #3](https://github.com/DivyanKavdia/Neurofence/pull/3) |
+| Enabled cloud plan/apply and paid provider calls | Not run |
 | GitHub LiteLLM fork | `DivyanKavdia/litellm` verified as a fork of `BerriAI/litellm`; tested commit fetched successfully and source linked |
 
 The actual proxy test used the pinned Python LiteLLM release with a server-configured fixture response, so no provider credentials or paid inference were needed. It is distinct from the HTTP contract tests, which use a local protocol fixture. GitHub CI additionally exercises the digest-pinned container with the same restrictions as the optional Kubernetes workload.
 
 All four jobs passed for commit `ae887001eb66dee66fa477b819e681afe8825bef`: [console, LiteLLM container/mobile integration and Terraform](https://github.com/DivyanKavdia/Neurofence/actions/runs/34745659237). The HTTP regression also verifies distinct storage for scope names that previously collided. The original integration used a submodule; the direct-source follow-up replaces it with tracked files and a Pages exclusion configuration.
 
-The direct-source follow-up imports the backend from the verified fork as regular files, records upstream hashes, and verifies that the runtime imports those files. Its Dockerfile reuses the pinned dependency layer. The complete source-backed HTTP/mobile test passed locally, including request and response checks, token usage, replay protection and metadata retention. Container CI is being verified before merge. The native Rust accelerator is not built or enabled.
+The direct-source follow-up imports the backend from the verified fork as regular files, records upstream hashes, and verifies that the runtime imports those files. Its Dockerfile reuses the pinned dependency layer. The complete source-backed HTTP/mobile test passed locally, including request and response checks, token usage, replay protection and metadata retention. Container build, source origin verification and the complete runtime test are CI gates for this follow-up. The entry point also rejected an unrecorded source edit before loading LiteLLM; the original file was restored. The native Rust accelerator is not built or enabled.
 
 The integration guide documents the source/fork workflow, server-only configuration, current prototype boundaries and provisioning sequence. Existing public Pages continues using the browser mock.
 

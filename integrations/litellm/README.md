@@ -4,7 +4,7 @@ NeuralFence v0.5 adds a working model execution adapter for LiteLLM v1.100.1. Th
 
 ## Source inside Neurofence
 
-`vendor/litellm` is an ordinary tracked folder in this repository. A normal clone contains the backend code; no submodule initialization or separate LiteLLM checkout is required. It contains the Python SDK and proxy, the Rust source and supporting metadata from [DivyanKavdia/litellm](https://github.com/DivyanKavdia/litellm), pinned to v1.100.1 commit `1dba17b10ded12ad0021edb453ba2c54e4637928`.
+`vendor/litellm` is an ordinary tracked folder in this repository. The source utilities need Python 3.11 or newer. A normal clone contains the backend code; no submodule initialization or separate LiteLLM checkout is required. It contains the Python SDK and proxy, the Rust source and supporting metadata from [DivyanKavdia/litellm](https://github.com/DivyanKavdia/litellm), pinned to v1.100.1 commit `1dba17b10ded12ad0021edb453ba2c54e4637928`.
 
 The import contains 2,678 files. `source.manifest.json` records their upstream hashes, and `source.lock.json` records the current source digest, fork and dependency image. The root enterprise tree, upstream dashboard build and unrelated examples, tests and deployment scaffolding are excluded. Neurofence owns the console, policy controls and execution receipts. See [third-party notices](../../THIRD_PARTY_NOTICES.md).
 
