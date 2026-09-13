@@ -6,7 +6,7 @@ A React/TypeScript enterprise AI trust console covering the 25 primary screens a
 
 ## Open or run
 
-Open the repository's built `index.html` directly in a browser. The static console runs offline with browser storage. The [existing GitHub Pages site](https://divyankavdia.github.io/Neurofence/) remains on the previous published version until this branch is authorized and published.
+Open [NeuralFence on GitHub Pages](https://divyankavdia.github.io/Neurofence/) or the repository's built `index.html` directly in a browser. The static console runs offline with browser storage.
 
 For development, use Node.js 24:
 
@@ -54,7 +54,7 @@ Everything remains synthetic: identities, credentials, providers, tools, workfor
 
 [infra/README.md](infra/README.md) maps every backend dependency and gives the provisioning sequence. Terraform contains AWS Mumbai network/EKS/ECR, RDS PostgreSQL, ElastiCache Valkey, MSK, encrypted S3 evidence, KMS/Secrets Manager and IAM; a second root installs ClickHouse, OPA and OpenTelemetry. Local Compose definitions mirror the dependency interfaces.
 
-No cloud resources have been created. Formatting/syntax checks pass, but full Terraform provider validation and mocked plans remain pending because of local provider limitations and the blocked GitHub push. Complete the configured CI checks and review an account-specific plan before applying.
+No cloud resources have been created. GitHub CI passes formatting and provider validation for both Terraform roots, plus both credential-free AWS mock plans. Review an account-specific plan before applying; the platform plan requires an existing cluster and VPC connectivity.
 
 ## Verification
 
@@ -81,4 +81,4 @@ The gate checks TypeScript, builds the console, runs API/HTTP tests and drives b
 | `assets/brand/` | Approved identity, font and reusable marks |
 | `infra/`, `docs/`, `tests/` | Provisioning definitions, scope/API handoff and verification |
 
-Publishing remains the existing GitHub Pages `main` → repository-root flow. The ready work is on `feature/full-frontend`; pushing it and updating Pages requires authorization after automatic approval review blocked this turn's push.
+Publishing uses the existing GitHub Pages `main` → repository-root flow. Run the frontend and infrastructure CI gates before merging changes into `main`; the committed static build is the Pages artifact.

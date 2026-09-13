@@ -1,6 +1,6 @@
 # Validation record — v0.4
 
-Checked on 13 September 2026 against the local `feature/full-frontend` implementation.
+Checked on 13 September 2026 against the `feature/full-frontend` implementation, including GitHub CI on commit `17f8288546a2ac728849e53fe01454103aa56b80`.
 
 | Check | Result |
 | --- | --- |
@@ -12,17 +12,19 @@ Checked on 13 September 2026 against the local `feature/full-frontend` implement
 | Visual review | Desktop command center and mobile tool playground screenshots inspected |
 | Terraform HCL formatting/syntax | Passed |
 | Local dependency YAML and OpenAPI JSON parsing | Passed |
-| Terraform provider validation and mock plans | Pending; local provider cache/launch limitations |
+| Terraform provider initialization and validation | Both AWS and platform roots passed in GitHub CI |
+| Terraform AWS mock plans | Both profiles passed; 2 passed, 0 failed |
 | Docker dependency startup | Not run; Docker unavailable |
 | Cloud plan/apply and production backend integration | Not run |
-| GitHub CI and updated Pages publication | Blocked by automatic approval review; approval to push is required |
+| GitHub frontend CI | Passed: strict types, build, 15 API/HTTP tests, 75 browser checks and identical committed static output |
+| GitHub Pages publication | Published from the checked static build after merge to `main` |
 
 The API tests cover all nine workflows, exact single-use tool and budget approvals, permission and tenant restrictions, concurrency, current-period hierarchical budgets, threshold routing and notifications, timeout reconciliation, immutable drafts, canary allocation, independent review, incident evidence, workforce controls and assurance gates. The HTTP test exercises real loopback requests, versioned writes, repeat receipts, isolation, structured errors and private-source exclusion. Migration checks preserve empty tool grants, suspended agents, revoked credentials, historical unassigned spend and cancellation of old approvals.
 
-Browser checks exercise navigation, object creation, approval review, role switching, runtime decisions, incident containment, downloads, assurance remediation, saved views, search, file/OCR simulation, persistence and mobile application creation. They use a Chromium headless shell in this workspace; this is not physical iOS/Android validation or accessibility certification. Screenshots use synthetic records created by the tests.
+Browser checks exercise navigation, object creation, approval review, role switching, runtime decisions, incident containment, downloads, assurance remediation, saved views, search, file/OCR simulation, persistence and mobile application creation. They passed with a Chromium headless shell locally and with Playwright Chromium in GitHub CI; this is not physical iOS/Android validation or accessibility certification. Screenshots use synthetic records created by the tests.
 
-The final targeted API regression includes the threshold-routing and job-ID fixes. Browser results were recorded after the frontend/accessibility/file-flow changes; those later API fixes do not alter layout.
+The full local suite was rerun from the recovered publication checkout. A clean dependency install reproduces the committed static build. The published Git tree matches the verified local snapshot.
 
-The Terraform CI workflow performs `fmt`, provider `validate`, and credential-free mocked AWS plans. It contains no `apply` step. The AWS and Kubernetes roots still require those gates and an account-specific plan before provisioning. See [infrastructure handoff](../infra/README.md).
+The Terraform CI workflow performs `fmt`, locked-provider initialization, provider `validate`, and credential-free mocked AWS plans. It contains no `apply` step. These gates passed in [GitHub CI](https://github.com/DivyanKavdia/Neurofence/actions/runs/34743454348). The AWS and Kubernetes roots still require an account-specific plan before provisioning. See [infrastructure handoff](../infra/README.md).
 
-Automatic approval review rejected pushing the implementation to `DivyanKavdia/Neurofence`, stating that implementation authorization did not establish permission to publish to that external repository. The push was not retried through another route. All implementation and reviewable changes are committed locally; the existing hosted prototype has not been updated.
+Publication is authorized. [Pull request #1](https://github.com/DivyanKavdia/Neurofence/pull/1) contains the implementation and validation history. The [live console](https://divyankavdia.github.io/Neurofence/) uses synthetic browser data; it does not connect to a provisioned cloud backend.

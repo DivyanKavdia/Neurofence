@@ -84,7 +84,7 @@ The frontend/mock API is not deployed into this cluster. ECR repositories reserv
 
 The pilot defaults to one NAT gateway, a single-AZ database and one ClickHouse replica. Set `single_nat_gateway=false` and `database_multi_az=true` for network/database redundancy. ClickHouse replication, worker autoscaling, production monitoring destinations and per-service egress restrictions remain deployment decisions. EKS node min/max values alone do not install a cluster autoscaler. HTTPS egress is allowed for provider/secret endpoints; restrict it through the chosen egress proxy for production. Network policy starts in VPC CNI standard mode; strict startup enforcement requires cluster-wide DNS/system policies as well.
 
-HCL formatting and syntax checks pass. Full provider validation and mocked plans are configured in `.github/workflows/validate.yml`, but have not passed yet: this workspace has provider-cache/launch limitations, and automatic approval review blocked the GitHub push needed to run CI. **Do not apply these definitions until that validation and an account-specific plan have passed.** No Terraform apply or cloud smoke test has been run.
+GitHub CI passes HCL formatting, locked-provider initialization and provider validation for both roots. Both credential-free AWS mock plans pass: the private pilot dependencies and the redundant-network/outbox profile. See the [validation record](../docs/VALIDATION.md) for evidence. Review an account-specific plan before provisioning. No Terraform apply or cloud smoke test has been run.
 
 ```bash
 terraform fmt -check -recursive infra/terraform
@@ -95,6 +95,6 @@ terraform -chdir=infra/terraform/platform init -backend=false
 terraform -chdir=infra/terraform/platform validate
 ```
 
-The AWS test file uses mock providers and `command = plan`; it does not provision resources. Platform validation checks provider schema locally; a real platform plan requires the existing cluster.
+The AWS test file uses mock providers and `command = plan`; it does not provision resources. Platform validation checks the provider schema; a real platform plan requires the existing cluster.
 
 References: [Terraform validation](https://developer.hashicorp.com/terraform/cli/commands/validate), [mock provider tests](https://developer.hashicorp.com/terraform/language/tests/mocking), [EKS network policy configuration](https://docs.aws.amazon.com/eks/latest/userguide/cni-network-policy-configure.html).
