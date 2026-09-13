@@ -912,3 +912,7 @@ button:focus-visible {
     display: none;
   }
 }
+
+@media (max-width: 760px) {
+  .top-actions .workspace-shortcut { display: none; }
+}

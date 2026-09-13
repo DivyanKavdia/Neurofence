@@ -8,7 +8,7 @@ import {
   uid,
 } from "@neurofence/contracts/types";
 import { RequestContext } from "../context";
-import { inspect } from "../execution/inspect";
+import { inspect, InspectionStage } from "../execution/inspect";
 import { runModel } from "../execution/model";
 import { runTool } from "../execution/tool";
 import { hash, requireValue } from "../shared/values";
@@ -126,8 +126,25 @@ export async function handleRuntime(ctx: RequestContext) {
     );
     const policy = find("policies", str(body.policy || "baseline"));
     const effective = { ...policy, ...(body.draft ? obj(policy.draft) : {}) };
-    if (body.stage === "Response")
+    if (body.stage === "Response" || body.stage === "Tool result")
       effective.pii = effective.responseAction || effective.pii;
-    return respond(inspect(str(body.text), effective, state));
+    requireValue(
+      ["Request", "Response", "Tool arguments", "Tool result"].includes(
+        str(body.stage || "Request"),
+      ),
+      "Choose an inspection stage.",
+    );
+    requireValue(
+      str(body.text).length <= 200000,
+      "Inspection input exceeds 200,000 characters.",
+    );
+    return respond(
+      inspect(
+        str(body.text),
+        effective,
+        state,
+        str(body.stage || "Request") as InspectionStage,
+      ),
+    );
   }
 }

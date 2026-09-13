@@ -12,6 +12,35 @@ export function completeJobs(
   state: State,
   audit: (e: string, d: string, r?: string) => void,
 ) {
+  if (arr(state.settings.modules).includes("M7"))
+    for (const campaign of state.data.campaigns) {
+      if (
+        !campaign.scheduleEnabled ||
+        num(campaign.nextRunAt) > Date.now() ||
+        campaign.status === "Running"
+      )
+        continue;
+      campaign.nextRunAt =
+        Date.now() + (campaign.schedule === "Weekly" ? 7 : 1) * 86400000;
+      campaign.status = "Running";
+      campaign.version++;
+      campaign.jobId = uid("job");
+      state.data.jobs.push({
+        id: str(campaign.jobId),
+        version: 1,
+        collection: "campaigns",
+        resource: campaign.id,
+        status: "Running",
+        progress: 0,
+        startedAt: Date.now(),
+        readyAt: Date.now() + 900,
+      });
+      audit(
+        "Started scheduled sample campaign",
+        str(campaign.name),
+        campaign.id,
+      );
+    }
   for (const job of state.data.jobs.filter((j) => j.status === "Running")) {
     job.progress = Math.min(
       95,
@@ -59,6 +88,10 @@ export function completeJobs(
         },
       ];
       target.gate = pass ? "Ready" : "Blocked";
+      if (collection === "scans" && pass && target.digest) {
+        target.approvedDigest = target.digest;
+        target.provenance = "Reviewed sample provenance";
+      }
       if (!pass)
         state.data.incidents.unshift({
           id: uid("INC"),

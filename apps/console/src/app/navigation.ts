@@ -11,7 +11,7 @@ export const navigation = [
     label: "AI inventory",
     icon: "layers",
     module: "M1",
-    tabs: ["Inventory", "Relationships"],
+    tabs: ["Inventory", "Relationships", "Discovery & risk"],
   },
   {
     id: "workforce",
@@ -53,6 +53,7 @@ export const navigation = [
       "Tool permissions",
       "Tool playground",
       "Tool traces",
+      "Workflows & delegation",
     ],
   },
   {
@@ -65,6 +66,7 @@ export const navigation = [
       "Budget hierarchy",
       "Usage ledger",
       "Forecast & anomalies",
+      "Prices & reconciliation",
     ],
   },
   {
@@ -79,7 +81,7 @@ export const navigation = [
     label: "Assurance",
     icon: "flask",
     module: "M7",
-    tabs: ["Red team", "Supply chain"],
+    tabs: ["Red team", "Supply chain", "Schedules & provenance"],
   },
   {
     id: "governance",
@@ -90,6 +92,8 @@ export const navigation = [
       "Approvals",
       "Exceptions",
       "Evidence & compliance",
+      "Evidence lifecycle",
+      "Policy distribution",
       "Audit trail",
       "Integrations",
       "Members",

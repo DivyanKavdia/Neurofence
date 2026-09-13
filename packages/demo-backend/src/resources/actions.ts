@@ -166,6 +166,10 @@ export function updateResource(ctx: CollectionContext, record: Row) {
       record.status === "Passed",
       "A passing retest is required to release.",
     );
+    requireValue(
+      !record.digest || record.digest === record.approvedDigest,
+      "Artifact changed after its last passing scan.",
+    );
     record.gate = "Released";
   } else if (collection === "integrations" && action === "test") {
     record.status = str(record.endpoint).includes("fail")
@@ -209,7 +213,26 @@ export function updateResource(ctx: CollectionContext, record: Row) {
       ...body,
     } as Record<string, Json>;
     validate(collection, next, state, session, id);
+    if (
+      ["campaigns", "scans"].includes(collection) &&
+      record.status === "Running"
+    )
+      requireValue(false, "Wait for this run to complete before editing it.");
+    const assuranceChanged = ["target", "artifact", "provenance", "pack"].some(
+      (key) => body[key] !== undefined && body[key] !== record[key],
+    );
     Object.assign(record, body);
+    if (["campaigns", "scans"].includes(collection) && assuranceChanged) {
+      record.status = "Quarantined";
+      record.gate = "Blocked";
+      delete record.remediation;
+    }
+    if (collection === "campaigns" && body.schedule !== undefined) {
+      record.scheduleEnabled = ["Daily", "Weekly"].includes(str(body.schedule));
+      record.nextRunAt = record.scheduleEnabled
+        ? Date.now() + (body.schedule === "Weekly" ? 7 : 1) * 86400000
+        : 0;
+    }
     if (["agents", "projects", "tools"].includes(collection))
       invalidate("Access bindings changed");
   } else

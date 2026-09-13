@@ -38,6 +38,14 @@ export function createResource(ctx: CollectionContext) {
       bomVersion: 1,
       bomHistory: [],
     });
+  if (
+    collection === "campaigns" &&
+    ["Daily", "Weekly"].includes(str(body.schedule))
+  ) {
+    record.scheduleEnabled = true;
+    record.nextRunAt =
+      Date.now() + (body.schedule === "Weekly" ? 7 : 1) * 86400000;
+  }
   if (collection === "members") record.status = "Invited";
   if (collection === "workforcePolicies") record.status = "Active";
   if (collection === "workforce") {

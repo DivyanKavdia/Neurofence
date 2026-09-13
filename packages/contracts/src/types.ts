@@ -1,10 +1,5 @@
 export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | Json[]
-  | { [key: string]: Json };
+  string | number | boolean | null | Json[] | { [key: string]: Json };
 
 /** Versioned JSON resources. Every mutation is validated by the mock BFF schema. */
 export type Row = {
@@ -38,6 +33,9 @@ export const collections = [
   "detectors",
   "savedViews",
   "jobs",
+  "prices",
+  "controls",
+  "distributions",
 ] as const;
 
 export type Collection = (typeof collections)[number];
@@ -203,6 +201,12 @@ export const capabilities: Record<string, Role[]> = {
   ],
   reveal: ["Security admin", "SOC analyst"],
   savedViews: roles,
+  evidenceExport: ["Security admin", "Governance owner", "Auditor"],
+  evidence: ["Security admin", "Governance owner"],
+  distribution: ["Platform admin", "Platform engineer"],
+  prices: [],
+  controls: [],
+  distributions: [],
   audit: [],
   models: ["Platform admin", "Platform engineer"],
 };

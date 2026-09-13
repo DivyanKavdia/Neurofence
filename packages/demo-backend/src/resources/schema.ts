@@ -19,7 +19,15 @@ export const fields: Partial<Record<Collection, string[]>> = {
     "inputRate",
     "outputRate",
   ],
-  projects: ["name", "owner", "route", "budget", "policy"],
+  projects: [
+    "name",
+    "owner",
+    "route",
+    "budget",
+    "policy",
+    "costCenter",
+    "keyExpires",
+  ],
   routes: [
     "name",
     "alias",
@@ -66,6 +74,10 @@ export const fields: Partial<Record<Collection, string[]>> = {
     "maxSteps",
     "maxDuration",
     "maxDepth",
+    "maxCost",
+    "maxModelCalls",
+    "allowedModels",
+    "allowedDelegates",
   ],
   servers: ["name", "endpoint", "transport", "auth", "secret", "owner"],
   tools: ["name", "serverId", "action", "scope", "parameters", "expires"],
@@ -75,6 +87,7 @@ export const fields: Partial<Record<Collection, string[]>> = {
     "owner",
     "risk",
     "coverage",
+    "classification",
     "tags",
     "links",
     "status",
@@ -109,6 +122,9 @@ export const configCollections: Collection[] = [
 ];
 
 export const moduleFor: Partial<Record<Collection, string>> = {
+  prices: "M6",
+  controls: "M9",
+  distributions: "M9",
   providers: "M4",
   models: "M4",
   projects: "M4",

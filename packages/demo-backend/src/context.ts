@@ -3,6 +3,7 @@ import {
   ApiError,
   can,
   Collection,
+  collections,
   Request,
   Result,
   Row,
@@ -40,11 +41,14 @@ export function createRequestContext(
   const state = structuredClone(
     services.store.read(key) || createState(undefined, session.tenant),
   );
+  // Additive migration preserves existing schema-2 browser/file workspaces.
+  for (const collection of collections) state.data[collection] ||= [];
   const correlationId = uid("request");
   const persist = () => {
     const saved = structuredClone(state);
     if (!saved.settings.rawContent) {
       for (const trace of saved.data.traces) {
+        if (trace.legalHold && trace.content) continue;
         if (!trace.modelRuntime || trace.modelRuntime === "mock") continue;
         delete trace.content;
         trace.preview = "Request content not retained";
@@ -106,7 +110,10 @@ export function createRequestContext(
       );
     }
     if (collection === "assets") return row.owner === session.user;
-    if (["workforce", "members"].includes(collection)) return false;
+    if (
+      ["workforce", "members", "controls", "distributions"].includes(collection)
+    )
+      return false;
     if (collection === "audit") return str(row.actor).startsWith(session.user);
     return true;
   };
