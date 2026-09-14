@@ -1,27 +1,12 @@
-# Feature coverage and remaining work
+# Requirement reference
 
-This is the implementation audit against the **102 normalized M1–M9 functional requirements** in `Enterprise_AI_Trust_Fabric_Coding_Context_Native_Gateway_v2.md`, checked alongside the v1 UI functional design and v2 low-level design. The source design describes a production platform; the current deliverable is an interactive console with a stateful dummy backend and optional configured LiteLLM text execution.
+Use this when matching a task to the supplied Native Gateway v2 requirements. Start with [product scope](../product-scope.md) for the shorter overview.
 
-**Demo** means the stated workflow runs and persists locally. **Partial** means part of the requirement runs and the remaining work is named. **Gap** means no working implementation of that requirement. None of these labels certify production readiness.
+**Demo** means the workflow runs locally. **Partial** identifies the remaining implementation. **Gap** means it is not implemented. These statuses describe the prototype, including optional LiteLLM text execution.
 
-## Flows added by this audit
+Source: `Enterprise_AI_Trust_Fabric_Coding_Context_Native_Gateway_v2.md`, with the v1 UI design and v2 engineering design supplied at project kickoff. Requirement IDs are retained so incoming developers can trace the original scope.
 
-| Console entry                         | Working additions                                                                                                                                   | Main backend owner                                                  |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| AI inventory → Discovery & risk       | JSON file/paste import, atomic preview/apply, duplicate detection, preserved ownership, component history, configurable 0–100 risk and contributors | `workflows/inventory.ts`                                            |
-| Guardrails → Detectors / Simulator    | Literal dictionaries, stage selection, safe redaction, rule/span evidence and bounded inspection                                                    | `workflows/detectors.ts`, `execution/inspect.ts`                    |
-| Agents & MCP → Workflows & delegation | Explicit delegation, model grants, workflow call/cost limits, tool-result inspection, correlated traces                                             | `execution/authority.ts`, `execution/tool.ts`, `execution/model.ts` |
-| FinOps → Prices & reconciliation      | Effective price versions, disjoint token categories, duplicate-safe external usage, cost centers and invoice adjustments                            | `workflows/finops.ts`                                               |
-| Governance → Evidence lifecycle       | Hold/release, stale-safe purge preview, retained ledger metadata, control mappings and integrity exports                                            | `workflows/evidence.ts`                                             |
-| Governance → Policy distribution      | Bundle build, acknowledgement/failure/retry, integrity checks, expiry and configuration-drift enforcement                                           | `workflows/distribution.ts`                                         |
-| Assurance → Schedules & provenance    | Daily/weekly sample scheduling, digest/publisher/license history, drift quarantine and retest gates                                                 | `workflows/assurance.ts`, `execution/jobs.ts`                       |
-| Global actions                        | Role-scoped action queue and contextual help, including mobile profile-menu access                                                                  | `app/WorkspaceAssistance.tsx`                                       |
-
-Backend paths above are under `packages/demo-backend/src/`; UI paths are under `apps/console/src/`. Browser/file workspaces migrate additively: existing decisions and explicit denials are preserved. Agent model/delegate grants default to empty when absent. Existing risk labels remain available; calculated risk is recorded separately.
-
-## Requirement-by-requirement coverage
-
-### M1
+## M1
 
 | Requirement                     | State   | Implementation and remaining work                                                                                                      |
 | ------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -36,7 +21,7 @@ Backend paths above are under `packages/demo-backend/src/`; UI paths are under `
 | M1-FR-009 — Graph search        | Partial | Search and relationship pivots work. A general graph query service remains.                                                            |
 | M1-FR-010 — Compliance mapping  | Demo    | Customer framework controls can link scoped evidence and export an integrity manifest.                                                 |
 
-### M2
+## M2
 
 | Requirement                             | State   | Implementation and remaining work                                                                              |
 | --------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
@@ -51,7 +36,7 @@ Backend paths above are under `packages/demo-backend/src/`; UI paths are under `
 | M2-FR-009 — Privacy modes               | Partial | Masked reads and retained-content controls work; endpoint privacy filtering and consent collection remain.     |
 | M2-FR-010 — Incident export             | Partial | Incident and evidence exports work; actual collector/SIEM delivery remains.                                    |
 
-### M3
+## M3
 
 | Requirement                         | State   | Implementation and remaining work                                                                                     |
 | ----------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -68,7 +53,7 @@ Backend paths above are under `packages/demo-backend/src/`; UI paths are under `
 | M3-FR-011 — Multilingual            | Gap     | There is no validated multilingual detector pack.                                                                     |
 | M3-FR-012 — Explainability          | Demo    | Traces and simulator expose rule IDs, spans, stage, decision and policy version without raw matched values.           |
 
-### M4
+## M4
 
 | Requirement                           | State   | Implementation and remaining work                                                                                                |
 | ------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -87,7 +72,7 @@ Backend paths above are under `packages/demo-backend/src/`; UI paths are under `
 | M4-FR-013 — Health management         | Partial | Sample health and actual LiteLLM reachability work; distributed health probes/circuit state remain.                              |
 | M4-FR-014 — Admin APIs                | Demo    | Versioned provider/model/route/project administration works against the shared BFF.                                              |
 
-### M5
+## M5
 
 | Requirement                        | State   | Implementation and remaining work                                                                                             |
 | ---------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -106,7 +91,7 @@ Backend paths above are under `packages/demo-backend/src/`; UI paths are under `
 | M5-FR-013 — MCP multiplexing       | Gap     | Live MCP connection multiplexing is not implemented.                                                                          |
 | M5-FR-014 — Trace correlation      | Demo    | Tool and mock model calls share a workflow ledger, authority chain and trace explorer.                                        |
 
-### M6
+## M6
 
 | Requirement                        | State   | Implementation and remaining work                                                                                         |
 | ---------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -125,7 +110,7 @@ Backend paths above are under `packages/demo-backend/src/`; UI paths are under `
 | M6-FR-013 — Currency/tax           | Gap     | FX and tax configuration are not implemented; the ledger explicitly uses INR.                                             |
 | M6-FR-014 — Auditability           | Demo    | Budget decisions, prices, imports, adjustments and administrative changes record audit metadata.                          |
 
-### M7
+## M7
 
 | Requirement                     | State   | Implementation and remaining work                                                                           |
 | ------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
@@ -138,7 +123,7 @@ Backend paths above are under `packages/demo-backend/src/`; UI paths are under `
 | M7-FR-007 — Re-test             | Demo    | Remediation links and deterministic retests preserve previous findings and require a passing result.        |
 | M7-FR-008 — Scoring             | Partial | Sample pass/fail and severity work; formal assurance scoring and trend baselines remain.                    |
 
-### M8
+## M8
 
 | Requirement                        | State   | Implementation and remaining work                                                                                      |
 | ---------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -151,7 +136,7 @@ Backend paths above are under `packages/demo-backend/src/`; UI paths are under `
 | M8-FR-007 — Drift monitoring       | Partial | Recorded metadata changes quarantine the artifact and invalidate release/remediation; automatic drift polling remains. |
 | M8-FR-008 — M1 federation          | Partial | Asset relationships and normalized imports work; automatic scanner-to-inventory federation remains.                    |
 
-### M9
+## M9
 
 | Requirement                     | State   | Implementation and remaining work                                                                                                                           |
 | ------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -167,19 +152,3 @@ Backend paths above are under `packages/demo-backend/src/`; UI paths are under `
 | M9-FR-010 — KMS/secrets         | Partial | Terraform provisions KMS/secret dependencies; per-service retrieval/rotation code remains.                                                                  |
 | M9-FR-011 — Multi-tenancy       | Partial | Registered companies, shared memberships, reviewed defaults and locked scope overrides work; production authenticated/distributed isolation remains.        |
 | M9-FR-012 — Evidence APIs       | Partial | Scoped trace/control metadata exports with SHA-256 manifests work; signed, durable evidence APIs remain.                                                    |
-
-## Validation and deployment boundary
-
-`tests/api/workflows.test.cjs` covers atomic/duplicate imports, price arithmetic, stale invoice edits, stage-aware dictionaries, result blocks with charges, data/delegation limits, model-call ceilings, bundle acknowledgement/expiry/drift, holds and stale purge previews, scoped evidence export, schedules/provenance and saved-workspace migration. Existing API tests retain the nine original journeys and LiteLLM receipt, residency, budget and privacy gates. `tests/e2e/workflows.cjs` drives the new forms and downloads; `tests/e2e/console.cjs` covers navigation and responsive layouts across 42 page/tab views.
-
-The existing [Terraform dependency map](../infra/README.md) supplies the future PostgreSQL, Valkey, Kafka, object storage, KMS, identity and Kubernetes boundaries. The new prototype flows use the existing state stores and do not introduce cloud accounts or services. No Terraform apply is part of this change.
-
-The next backend implementation should prioritize authenticated ingress and distributed state, followed by live MCP/auth brokerage, real detectors/OCR, durable policy signing/delivery and evidence retention. Caching, streaming, optimization, FX/tax, endpoint collection and scanner integrations remain explicit gaps above; broad screen coverage does not mean those services exist.
-
-## Company configuration
-
-The [company administration guide](company-administration.md) documents the additional onboarding, people/teams, access/identity, configuration, history/audit and provisioning flows. Settings affect backend eligibility, permissions and the console; identity delivery and infrastructure application remain explicit production integrations.
-
-## Local evaluation release
-
-The [demo and policy testing guide](demo-and-policy-testing.md) covers saved synthetic policy suites, comparison/regression results, isolated scenarios and validated snapshot restore. These deepen M3 explainability and M7 regression testing; curated adversarial packs and live campaign workers remain partial. Five Demo studio scenarios exercise existing model/tool paths, including fallback, budget denial, injection and expired approvals. FinOps planning, streaming, caching, OCR and expanded incident playbooks remain follow-up work.

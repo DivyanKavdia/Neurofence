@@ -1,57 +1,63 @@
-# Architecture and ownership
+# Architecture
 
-Neurofence currently consists of a React console, a shared TypeScript demo control plane, a local Node HTTP adapter and an optional LiteLLM model runtime. The supplied Native Gateway v2 design describes the target production services. The running prototype demonstrates their workflows and contracts; it does not implement every production service in that design.
+The console and local HTTP API share one TypeScript demo backend. LiteLLM is an optional model-execution adapter. Terraform describes dependencies for the future production backend.
 
-## Code boundaries
+```mermaid
+flowchart TD
+  UI[React console] --> T[Transport]
+  T --> B[Browser demo]
+  T --> H[Local HTTP API]
+  B --> E[Shared business rules]
+  H --> E
+  E --> S[Browser or file storage]
+  E --> P[ProviderConnector]
+  P --> L[LiteLLM]
+```
 
-| Area                    | Owns                                                                                                 | Depends on                                                  |
-| ----------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `apps/console`          | Pages, editors, navigation, local session preview and transport selection                            | Shared contracts; demo backend in browser mode              |
-| `apps/api`              | HTTP envelopes, loopback serving, persistent file storage and LiteLLM connection configuration       | Shared contracts and demo backend                           |
-| `packages/contracts`    | Resource/transport types, capabilities, provider interface and budget attribution                    | No application or filesystem code                           |
-| `packages/demo-backend` | Demo state, authorization checks, versioning, approvals, budget decisions, traces and synthetic jobs | Contracts and an optional injected `ProviderConnector`      |
-| `integrations/litellm`  | Runtime entry point, deployment configuration and source provenance                                  | Tracked `vendor/litellm` source and pinned dependency image |
-| `infra`                 | Dependency provisioning for future backend services                                                  | Operator-supplied account, state and deployment settings    |
+The browser uses the mock execution path. Only the server can supply the LiteLLM connector; provider credentials stay there.
 
-Imports from shared code use `@neurofence/contracts/*` and `@neurofence/demo-backend`, resolved by the root TypeScript configuration and build. Inside an area, use relative imports. Application code must not become a dependency of a shared package. Node filesystem code and provider secrets belong in the API, outside the browser bundle.
+## Code ownership
 
-## Three execution modes
+| Area                            | Responsibility                                                              |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| `apps/console/src/app/App.tsx`  | Compose context, loading state, layout and dialog host                      |
+| `app/useConsoleState.tsx`       | Session, transport requests, refresh, routing and temporary UI state        |
+| `app/layout/`                   | Sidebar, header, page frame and mobile navigation                           |
+| `app/navigation.ts`, `Page.tsx` | Navigation definitions and feature selection                                |
+| `apps/console/src/features/`    | Product pages and their editors; policy testing is in `guardrails/testing/` |
+| `apps/console/src/components/`  | Reusable controls with shared focus, error and busy behavior                |
+| `apps/api/src/`                 | HTTP adapter, file storage and server-only provider connection              |
+| `packages/contracts/src/`       | Shared records, transport, provider and identity interfaces                 |
+| `packages/demo-backend/src/`    | Business rules, state transitions and synthetic execution                   |
 
-The console selects a `Transport` in `apps/console/src/lib/api.ts`. The public `config.js` defaults to browser mode. Browser mode instantiates `MockBackend` with `BrowserStore`; the HTTP server supplies its own `config.js` and instantiates the same backend with `FileStore`. Both run the same resource handlers.
-
-In LiteLLM mode, the HTTP server also injects `LiteLLMConnector` from `apps/api/src/providers/litellm.ts`. Neurofence still chooses the route, checks policy and budgets, owns the request receipt, inspects the response and records the trace. LiteLLM translates the approved text request to the configured provider protocol. The browser never receives its credential or chooses an upstream URL.
-
-The included source is a regular tracked directory, imported from the user's LiteLLM fork. Runtime verification checks the content digest and the imported Python module path. This profile uses Python; the retained Rust source is not compiled or enabled. The optional integration follows the decision to embed LiteLLM while retaining the product-owned `ProviderConnector` boundary. See the [runtime guide](../integrations/litellm/README.md) for source updates and [third-party notices](../THIRD_PARTY_NOTICES.md) for provenance and license boundaries.
+Imports across packages use `@neurofence/contracts/*` and `@neurofence/demo-backend`. Imports within an area are relative. Contracts contain no UI or filesystem code. Shared packages do not import from `apps/`.
 
 ## Follow a request
 
-1. A feature calls `request` or `mutate` through `ConsoleContext`. Mutations carry a request key and, when editing an existing record, its version.
-2. `backend.ts` captures the session and serializes the transaction. `context.ts` clones the tenant/environment workspace and supplies scoped lookup, version checks, auditing and persistence.
-3. `dispatch.ts` checks repeat receipts before running jobs or routing the request. Workspace/runtime handlers run before collection reads, review actions and resource mutations.
-4. Resource handlers in `resources/` validate fields, manage drafts and record lifecycle changes. Approval and incident actions live in `handlers/`.
-5. `execution/model.ts` and `execution/tool.ts` evaluate access, active policy, route eligibility and budgets. Inspection, budget approvals and trace creation are separate modules. MCP calls remain simulated.
-6. Before an external model call, the runtime handler persists a pending receipt, trace and conservative reservation. The connector sends the approved request once; response inspection and reported usage update the same trace. Ambiguous outcomes retain the reservation.
-7. The transaction persists a scoped snapshot and returns the BFF envelope. If content retention is off, real request/response content is removed from the saved trace. A completed repeat returns the existing receipt; an interrupted external call requires reconciliation.
+1. A page calls `ConsoleContext.request` or `mutate`. Mutations include a request key and the applicable record version.
+2. `backend.ts` captures the session and serializes work. `context.ts` resolves membership, clones the company/environment state and exposes scoped lookup and persistence helpers.
+3. `dispatch.ts` checks repeat receipts, then routes to `company/`, `handlers/`, `workflows/` or generic `resources/` actions.
+4. `execution/` checks identity, policy, route and budget before producing a model/tool decision. LiteLLM calls pass through the same Neurofence checks.
+5. Before an external model call, `handlers/runtime.ts` persists a pending receipt, trace and reservation. The result updates that trace. Ambiguous outcomes retain the reservation and require reconciliation.
+6. The action persists state and returns the [API envelope](api.md). Raw content is omitted from saved traces when retention is disabled.
 
-The [API guide](api.md) specifies exact errors, state transitions and privacy behavior. Keep request ordering and persistence checkpoints intact when changing handlers: moving a check after a provider call can change both enforcement and billing.
+Keep authorization before data access, and persistence checkpoints before external execution. Changing this order can cause an unauthorized call or a duplicate charge.
 
-## State and migration
+## Company actions
 
-Company-wide configuration and identity data live in a separate directory managed by `packages/demo-backend/src/company/`. Every request resolves active membership and server-derived capabilities before reading environment data. The shared resolver applies company, team, environment and application values. Runtime evaluation supplements each published resource policy with company constraints. See [Company administration](company-administration.md) for the exact precedence, lifecycle and production boundaries.
+`company/handler.ts` owns authorization, receipt replay and routing. `transaction.ts` owns company versions, audit entries and directory writes. The domain handlers are `configuration.ts`, `people.ts`, `operator.ts` and `setup.ts`.
 
-Browser data is keyed by tenant and environment. The file store encodes that same scope into a private filename and uses flushed writes plus atomic replacement. Existing browser fixtures and unambiguous legacy file names still migrate; the legacy fixture supports that behavior and its regression test.
+Company membership and published defaults are shared across environments. Resource records and activity are scoped to company/environment. Configuration resolves company → team → environment → project, with locked keys enforced. Company controls supplement independently published resource policies. See [company administration](company-administration.md).
 
-This is one serialized backend instance, not a distributed database. Ordinary repeat receipts live in memory; external model receipts are also persisted with the workspace. Production needs transactional shared reservations and receipts, authenticated principals, reconciliation workers and event delivery. Do not infer production guarantees from a passing demo workflow.
+## Persistence and integration boundaries
 
-## What is implemented versus planned
+| Concern         | Current behavior                                                                                                                 |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Browser state   | Local storage; a Web Lock serializes writes across tabs when supported                                                           |
+| HTTP state      | Encoded scope filenames and flushed atomic replacement; run one API process                                                      |
+| Migration       | Additive defaults preserve saved workspaces; legacy fixtures remain for compatibility                                            |
+| Retry receipts  | Ordinary receipts are in memory; company receipts are bounded in the directory; external model receipts persist in the workspace |
+| Background work | Synthetic jobs advance through polling                                                                                           |
+| LiteLLM source  | Tracked under `vendor/litellm/`; maintained through the [integration tools](../integrations/litellm/README.md)                   |
 
-| Capability                        | Current implementation                                                                  | Production handoff                                                                                     |
-| --------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Console and review workflows      | Interactive pages, role preview, versioned edits and synthetic records                  | Authenticated sessions and production capabilities                                                     |
-| Model execution                   | Browser simulation or optional governed LiteLLM text chat; buffered response inspection | Production identity, real detectors, reconciliation and separately specified streaming/other endpoints |
-| MCP and workforce controls        | Exact sample approvals and simulated activity                                           | Live tool execution, auth brokerage and collection agents                                              |
-| Inventory, assurance and evidence | Editable inventory, synthetic jobs, exports and audit records                           | Discovery, real scanners, retention deletion and signed evidence                                       |
-| Persistence and quotas            | Browser/file store and serialized sample transactions                                   | PostgreSQL, distributed reservations/cache, durable events and analytics                               |
-| Hosting                           | Static GitHub Pages console and local processes                                         | Reviewed Terraform plans, service images, ingress and account-specific deployment                      |
-
-The [product scope](product-scope.md) preserves the supplied screen/workflow mapping. The [infrastructure guide](../infra/README.md) maps PostgreSQL, Valkey, Kafka, ClickHouse, object storage, OPA, secrets and telemetry to future consumers. Those dependencies are deliberately optional for frontend development.
+These stores do not provide distributed transactions. The [handover guide](handover.md#suggested-backend-order) describes the replacement order. The [infrastructure guide](../infra/README.md) maps future service dependencies; they are optional for frontend development.

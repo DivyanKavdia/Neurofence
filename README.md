@@ -1,69 +1,49 @@
 # Neurofence
 
-Neurofence is an enterprise AI security and governance workspace. It brings model access, guardrails, agents and MCP tools, budgets, incidents, inventory and assurance into one console.
+An AI security and governance console for company administrators and engineering teams. It covers model access, guardrails, agents, budgets, incidents and evidence.
 
-The React frontend has a stateful demo backend for working through the product flows. An optional local API connects the model playground to the LiteLLM backend source included in this repository.
+**Current stage:** working React prototype with a stateful dummy backend. Optional LiteLLM integration supports text-model execution. Production authentication, shared storage and most external integrations still need implementation.
 
-[Open the demo](https://divyankavdia.github.io/Neurofence/) · [Product scope](docs/product-scope.md) · [Feature coverage](docs/feature-coverage.md) · [Architecture](docs/architecture.md)
+[Open the demo](https://divyankavdia.github.io/Neurofence/) · [Developer handover](docs/handover.md) · [What works and what remains](docs/product-scope.md)
 
-![Command center](docs/screenshots/command-center.png)
+## Run locally
 
-## Start developing
-
-Use Node.js 24. Run these commands from the repository root:
+Use **Node.js 24**. From the repository root:
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Open `http://127.0.0.1:8000`. Source changes rebuild automatically; refresh the browser to see them. Demo records persist in browser storage. Use **Explore workflows** for guided journeys and the profile menu to try another role or reviewer.
+Open `http://127.0.0.1:8000`. Refresh after source edits; the build runs automatically. No cloud account or model key is needed. Demo data stays in your browser.
 
-## Explore the working flows
+To try the main flow, open **Demo studio** as **Company admin**, create a scenario, then run its request. Open **Guardrails → Test lab** to compare active and draft policy.
 
-For a repeatable evaluation, open **Demo studio** as Company admin. Create an isolated company demo with a dataset, seed and failure scenario; run the request, reset it, or save and restore a snapshot. **Guardrails → Test lab** compares saved synthetic inputs against active and draft policies, with expected outcomes, new failures and run history. See the [demo and policy testing guide](docs/demo-and-policy-testing.md).
+## Find your starting point
 
-Start with **Company administration** to configure company branding, modules, identity settings, members, teams and application controls. Use **Preview as → Neurofence operator → Onboard company** to create a company, then complete its setup as Company admin. Configuration changes follow draft, validation, independent review and publication. The [company administration guide](docs/company-administration.md) walks through onboarding, inheritance and the production handoff.
+| Work                                    | Guide                                           |
+| --------------------------------------- | ----------------------------------------------- |
+| Joining the project                     | [Handover](docs/handover.md)                    |
+| Setup, editing, tests and publishing    | [Development](docs/development.md)              |
+| Code layout and request flow            | [Architecture](docs/architecture.md)            |
+| Product behavior and remaining work     | [Product scope](docs/product-scope.md)          |
+| Replacing the dummy backend             | [API contract](docs/api.md)                     |
+| Running or updating LiteLLM             | [Runtime guide](integrations/litellm/README.md) |
+| Provisioning backend dependencies later | [Infrastructure](infra/README.md)               |
 
-Use the module tabs for discovery imports and explainable risk, agent delegation and result inspection, price/usage imports and invoice reconciliation, evidence holds and control mappings, policy bundle acknowledgements, and scheduled assurance with provenance review. The help menu explains each area; the action queue collects pending approvals, incidents and jobs.
+## Repository map
 
-The [feature coverage audit](docs/feature-coverage.md) maps all 102 functional requirements to working demo behavior, partial implementations or remaining gaps. This includes explicit gaps such as production SSO, live MCP brokerage, caching and streaming.
+| Directory                    | Purpose                                                              |
+| ---------------------------- | -------------------------------------------------------------------- |
+| `apps/console/src/`          | React pages, app layout and shared controls                          |
+| `apps/api/src/`              | Local HTTP adapter, file storage and provider connection             |
+| `packages/contracts/src/`    | Shared types and interfaces                                          |
+| `packages/demo-backend/src/` | Demo business rules and state                                        |
+| `integrations/litellm/`      | LiteLLM configuration and maintenance tools                          |
+| `vendor/litellm/`            | Imported third-party source; follow the runtime guide before editing |
+| `infra/`                     | Local dependency services, database schema and Terraform             |
+| `tests/`                     | API, browser and integration tests                                   |
 
-## Choose a run mode
+`index.html` and `assets/console/` are generated by `npm run build` and committed for GitHub Pages. Edit the source under `apps/` and `packages/`.
 
-| Mode                    | Start here                                      | What runs                                                                                               |
-| ----------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Browser demo            | `npm run dev` or the public demo                | Console and shared demo logic; browser persistence; no backend account required                         |
-| Local HTTP API          | `npm run mock`, then open port 8080             | Same console and demo logic, with file persistence in `.runtime/data/`                                  |
-| LiteLLM model execution | [Runtime guide](integrations/litellm/README.md) | Local API plus the included LiteLLM source; fixture responses or explicitly configured live text models |
-
-LiteLLM replaces model execution only. Identity preview, virtual credentials, detector examples, MCP execution, workforce collection and assurance scans remain prototypes. The HTTP API is for local evaluation; its demo identity headers are not authentication.
-
-## Where to work
-
-| Directory                                  | Responsibility                                                               |
-| ------------------------------------------ | ---------------------------------------------------------------------------- |
-| `apps/console/src/app/`                    | Session, navigation, application shell and dialogs                           |
-| `apps/console/src/features/`               | Product pages and resource editors, grouped by feature                       |
-| `apps/console/src/components/`             | Shared tables, forms and accessible dialog controls                          |
-| `apps/api/src/`                            | Local HTTP server, file storage and server-only provider adapters            |
-| `packages/contracts/src/`                  | Transport, resource and provider types; common budget calculations           |
-| `packages/demo-backend/src/`               | Demo fixtures, transactions, resource handlers and execution decisions       |
-| `integrations/litellm/`, `vendor/litellm/` | Runtime configuration, source maintenance tools and imported LiteLLM backend |
-| `infra/`                                   | Local dependency services and Terraform for later cloud provisioning         |
-| `tests/`                                   | API contracts, browser workflows and full runtime integration                |
-
-A single root `package.json` installs and builds the first-party TypeScript code. `index.html` and `assets/console/` are generated and committed for GitHub Pages. Edit source files and rebuild instead of editing those artifacts.
-
-## Working guides
-
-- [Development](docs/development.md): commands, common changes, testing and troubleshooting.
-- [Architecture](docs/architecture.md): ownership, request flow and production boundaries.
-- [Company administration](docs/company-administration.md): onboarding, members, company defaults, overrides and reviewed publication.
-- [Demo and policy testing](docs/demo-and-policy-testing.md): repeatable scenarios, snapshots, saved test suites and comparisons.
-- [API contract](docs/api.md) and [OpenAPI](docs/openapi.json): envelopes, actions, state transitions and backend replacement.
-- [Product scope](docs/product-scope.md): all 25 primary screens and nine workflows.
-- [LiteLLM](integrations/litellm/README.md): fixture setup, live configuration and upstream updates.
-- [Infrastructure](infra/README.md): dependency map and Terraform provisioning sequence.
-
-Before submitting a change, run `npm test`. See the development guide for browser setup and additional runtime gates. [GitHub Actions](https://github.com/DivyanKavdia/Neurofence/actions/workflows/validate.yml) is the current validation record. Terraform defines future dependencies; it has not provisioned a cloud backend.
+Before a pull request, run `npm test`. See [test setup](docs/development.md#test-your-change) for the one-time browser install. Build results and change history live in [GitHub Actions](https://github.com/DivyanKavdia/Neurofence/actions) and pull requests.

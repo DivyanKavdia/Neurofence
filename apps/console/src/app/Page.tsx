@@ -23,7 +23,7 @@ import { RoleMatrix } from "../features/governance/RoleMatrix";
 import { Settings } from "../features/governance/Settings";
 import { Detectors } from "../features/guardrails/Detectors";
 import { Simulator } from "../features/guardrails/Simulator";
-import { PolicyLab } from "../features/guardrails/PolicyLab";
+import { PolicyLab } from "../features/guardrails/testing/PolicyLab";
 import { DemoStudio } from "../features/demo/DemoStudio";
 import { Incidents } from "../features/incidents/Incidents";
 import { Overview } from "../features/overview/Overview";

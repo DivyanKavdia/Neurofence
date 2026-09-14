@@ -1,4 +1,4 @@
-/* React console additions to the approved NeuralFence visual system. */
+/* Shared console controls and feature layouts. Loaded after base.css. */
 .app-shell {
   min-height: 100vh;
 }
