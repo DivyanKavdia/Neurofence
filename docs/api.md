@@ -95,3 +95,21 @@ New read-only collections are `prices`, `controls` and `distributions`; mutate t
 ## Company administration API
 
 See [company administration](company-administration.md#code-and-api-map) for onboarding, memberships, teams, configuration releases, overrides and provisioning endpoints. Company mutations use the company version in `If-Match`; draft publication always requires an independent active reviewer. Company configuration is enforced by the same shared workflow engine in browser and HTTP mode.
+
+## Policy tests and Demo studio
+
+All routes use `/api/v1`. Policy suites require Run or Policies permission; Run users see their own suites, while Policies users can manage suites across the environment. Suite writes and comparisons require the current suite version. Comparisons call the shared inspection engine without model execution. The workspace aggregate omits suite inputs; use the scoped endpoint.
+
+| Route                    | Method         | Result                                                                                |
+| ------------------------ | -------------- | ------------------------------------------------------------------------------------- |
+| `/policy-tests`          | GET / POST     | Visible suites and run history / create suite                                         |
+| `/policy-tests/{id}`     | PATCH / DELETE | Replace versioned inputs / delete suite and runs                                      |
+| `/policy-tests/{id}/run` | POST           | Active/draft results, changed cases, failed expectations and new failures             |
+| `/demo/scenarios`        | GET            | Available scenarios and current demo metadata                                         |
+| `/demo/create`           | POST           | New managed environment; requires current company version                             |
+| `/demo/reset`            | POST           | Recreate current demo; requires workspace revision, exact environment name and reason |
+| `/demo/backup`           | POST           | Portable synthetic snapshot                                                           |
+| `/demo/preview`          | POST           | Checksum/ownership/shape validation and import summary                                |
+| `/demo/restore`          | POST           | Revalidate snapshot and create a new environment; requires current company version    |
+
+Demo studio requires Company Admin permission and a dummy backend. Creation receipts survive restart. Snapshot authority exclusions, checksum encoding, limits and concurrency behavior are documented in the [workflow guide](demo-and-policy-testing.md); request schemas are in [OpenAPI](openapi.json).

@@ -11,6 +11,9 @@ export class MemoryStore implements Store {
     this.directory = structuredClone(directory);
   }
   values = new Map<string, State>();
+  remove(key: string) {
+    this.values.delete(key);
+  }
   read(key: string) {
     return this.values.get(key);
   }

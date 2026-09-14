@@ -111,6 +111,10 @@ export function Modal({
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const previousFocus = useRef(document.activeElement as HTMLElement);
+  const ctx = useConsole();
+  const busy = useRef(ctx.busy);
+  busy.current = ctx.busy;
   useEffect(() => {
     const heading = ref.current?.querySelector("h2");
     if (heading) heading.id = "dialog-title";
@@ -119,14 +123,17 @@ export function Modal({
       ?.focus();
   }, [children]);
   useEffect(() => {
-    const previous = document.activeElement as HTMLElement;
+    const previous = previousFocus.current;
+    const background = document.querySelector<HTMLElement>(".app-shell");
+    const previousInert = background?.inert;
+    if (background) background.inert = true;
     document.body.style.overflow = "hidden";
     const node = ref.current;
     const heading = node?.querySelector("h2");
     if (heading) heading.id = "dialog-title";
     node?.querySelector<HTMLElement>("input,select,textarea,button")?.focus();
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && !busy.current) onClose();
       if (e.key === "Tab") {
         const list = [
           ...node!.querySelectorAll<HTMLElement>(
@@ -147,6 +154,7 @@ export function Modal({
     document.addEventListener("keydown", handler);
     return () => {
       document.body.style.overflow = "";
+      if (background) background.inert = !!previousInert;
       document.removeEventListener("keydown", handler);
       previous?.isConnected && previous.focus();
     };
@@ -155,7 +163,7 @@ export function Modal({
     <div
       className="modal-backdrop"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget && !busy.current) onClose();
       }}
     >
       <div
@@ -168,6 +176,7 @@ export function Modal({
         <button
           className="icon-button dialog-close"
           aria-label="Close dialog"
+          disabled={ctx.busy}
           onClick={onClose}
         >
           <Icon name="close" />

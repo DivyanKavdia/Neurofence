@@ -57,6 +57,7 @@ export async function handleWorkspace(ctx: RequestContext) {
         : {}),
     };
     delete scoped.gatewayReceipts;
+    delete scoped.policyLab;
     scoped.settings.modelRuntime = providerConnector?.mode || "mock";
     for (const c of collections) {
       scoped.data[c] = scoped.data[c].filter((r) => inScope(r, c));
@@ -79,6 +80,7 @@ export async function handleWorkspace(ctx: RequestContext) {
       scoped.data.members = [];
       scoped.data.workforce = [];
     }
+    scoped.revision = state.revision + 1;
     return respond(scoped, true);
   }
   if (resource === "capabilities")

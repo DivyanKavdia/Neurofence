@@ -4,6 +4,14 @@ import { createState } from "../fixtures/seed";
 import { Store } from "./store";
 
 export class BrowserStore implements Store {
+  exclusive<T>(work: () => Promise<T>): Promise<T> {
+    return typeof navigator !== "undefined" && navigator.locks
+      ? navigator.locks.request("neurofence-demo-store", work)
+      : work();
+  }
+  remove(key: string) {
+    localStorage.removeItem(`neuralfence.console.v2.${key}`);
+  }
   readDirectory() {
     const raw = localStorage.getItem("neurofence.companies.v1");
     if (!raw) return undefined;

@@ -23,6 +23,8 @@ import { RoleMatrix } from "../features/governance/RoleMatrix";
 import { Settings } from "../features/governance/Settings";
 import { Detectors } from "../features/guardrails/Detectors";
 import { Simulator } from "../features/guardrails/Simulator";
+import { PolicyLab } from "../features/guardrails/PolicyLab";
+import { DemoStudio } from "../features/demo/DemoStudio";
 import { Incidents } from "../features/incidents/Incidents";
 import { Overview } from "../features/overview/Overview";
 import { Traces } from "../features/traces/Traces";
@@ -34,6 +36,8 @@ export function Page({ focusId }: { focusId?: string }) {
   const ctx = useConsole(),
     { page, tab, state } = ctx;
   switch (page) {
+    case "demo":
+      return <DemoStudio />;
     case "company":
       return <CompanyAdmin />;
     case "overview":
@@ -133,6 +137,7 @@ export function Page({ focusId }: { focusId?: string }) {
         return <Playground kind="model" focusId={focusId} />;
       return <GatewayOverview />;
     case "guardrails":
+      if (tab === "Test lab") return <PolicyLab />;
       if (tab === "Policy builder")
         return (
           <Catalog

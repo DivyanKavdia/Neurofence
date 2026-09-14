@@ -6,6 +6,7 @@ import {
   openSync,
   readFileSync,
   renameSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { resolve } from "node:path";
@@ -64,6 +65,9 @@ export class FileStore implements Store {
   write(key: string, state: State) {
     const file = this.path(key);
     this.atomicWrite(file, state, this.scopesDir);
+  }
+  remove(key: string) {
+    rmSync(this.path(key), { force: true });
   }
   private atomicWrite(
     file: string,

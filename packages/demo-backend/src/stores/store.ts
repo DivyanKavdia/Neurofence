@@ -6,4 +6,6 @@ export interface Store {
   write(key: string, state: State): void;
   readDirectory(): CompanyDirectory | undefined;
   writeDirectory(directory: CompanyDirectory): void;
+  remove?(key: string): void;
+  exclusive?<T>(work: () => Promise<T>): Promise<T>;
 }

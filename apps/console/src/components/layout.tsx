@@ -36,7 +36,6 @@ export const PageHead = ({
 }) => (
   <div className="page-head">
     <div>
-      <div className="eyebrow">AI trust workspace</div>
       <h1 tabIndex={-1}>{title}</h1>
       <p className="page-sub">{sub}</p>
     </div>

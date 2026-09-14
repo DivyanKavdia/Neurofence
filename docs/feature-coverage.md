@@ -179,3 +179,7 @@ The next backend implementation should prioritize authenticated ingress and dist
 ## Company configuration
 
 The [company administration guide](company-administration.md) documents the additional onboarding, people/teams, access/identity, configuration, history/audit and provisioning flows. Settings affect backend eligibility, permissions and the console; identity delivery and infrastructure application remain explicit production integrations.
+
+## Local evaluation release
+
+The [demo and policy testing guide](demo-and-policy-testing.md) covers saved synthetic policy suites, comparison/regression results, isolated scenarios and validated snapshot restore. These deepen M3 explainability and M7 regression testing; curated adversarial packs and live campaign workers remain partial. Five Demo studio scenarios exercise existing model/tool paths, including fallback, budget denial, injection and expired approvals. FinOps planning, streaming, caching, OCR and expanded incident playbooks remain follow-up work.
