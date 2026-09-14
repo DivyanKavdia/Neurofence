@@ -13,10 +13,16 @@ export function Settings() {
       title="Workspace and deployment settings"
       sub="The same workflows are available in every deployment profile."
     >
+      <Notice>
+        Company profile, privacy, modules and defaults are managed in Company
+        administration.
+      </Notice>
+      <Button onClick={() => ctx.go("company", "Configuration")}>
+        Open company configuration
+      </Button>
       <FormDialog
         title="Workspace settings"
         fields={[
-          { key: "name", label: "Workspace name", required: true },
           {
             key: "deployment",
             label: "Deployment profile",
@@ -24,61 +30,10 @@ export function Settings() {
             options: ["SaaS", "Private cloud", "On-premises", "Air-gapped"],
           },
           {
-            key: "residency",
-            label: "Data residency",
-            type: "select",
-            options: ["India", "Any region"],
-          },
-          {
-            key: "retention",
-            label: "Evidence privacy",
-            type: "select",
-            options: ["Metadata only", "Redacted content", "Full content"],
-          },
-          {
-            key: "days",
-            label: "Retention days",
-            type: "number",
-            min: 1,
-            max: 3650,
-          },
-          {
-            key: "fourEyes",
-            label: "Require independent approval",
-            type: "checkbox",
-          },
-          {
-            key: "rawContent",
-            label: "Explicitly retain content for future demo traces",
-            type: "checkbox",
-          },
-          {
-            key: "density",
-            label: "Display density",
-            type: "select",
-            options: ["Comfortable", "Compact"],
-          },
-          {
             key: "controlPlane",
             label: "Control-plane scenario",
             type: "select",
             options: ["Healthy", "Unavailable"],
-          },
-          {
-            key: "modules",
-            label: "Enabled modules",
-            type: "multi",
-            options: [
-              ["M1", "M1 · Inventory"],
-              ["M2", "M2 · Workforce"],
-              ["M3", "M3 · Guardrails"],
-              ["M4", "M4 · Gateway"],
-              ["M5", "M5 · Agent & MCP"],
-              ["M6", "M6 · FinOps"],
-              ["M7", "M7 · Red team"],
-              ["M8", "M8 · Supply chain"],
-              ["M9", "M9 · Governance"],
-            ],
           },
         ]}
         initial={settings as Record<string, Json>}

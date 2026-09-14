@@ -1,9 +1,13 @@
 import { arr, Row, State, str } from "@neurofence/contracts/types";
 
 import { mask } from "../shared/values";
+import { companyPolicy } from "../company/runtime";
 
 export type InspectionStage =
-  "Request" | "Response" | "Tool arguments" | "Tool result";
+  | "Request"
+  | "Response"
+  | "Tool arguments"
+  | "Tool result";
 type Finding = {
   detector: string;
   detectorVersion: number;
@@ -21,6 +25,7 @@ export function inspect(
   state: State,
   stage: InspectionStage = "Request",
 ) {
+  policy = companyPolicy(state, policy);
   const findings: Finding[] = [];
   const definitions: Record<
     string,
@@ -54,7 +59,22 @@ export function inspect(
     const detector = state.data.detectors.find(
       (d) => d.id === id && d.status === "Active",
     );
-    if (!detector) continue;
+    if (!detector) {
+      if (
+        (id === "pii" && state.settings.mandatoryPii) ||
+        (id === "injection" && state.settings.mandatoryInjection)
+      )
+        return {
+          decision: "DENY",
+          signals: [],
+          findings: [],
+          stage,
+          offsetUnit: "UTF-16 code units",
+          text: "",
+          reason: `Mandatory company detector ${id} is unavailable`,
+        };
+      continue;
+    }
     const definition = definitions[id];
     if (definition && definition.stages.includes(stage)) {
       for (const match of text.matchAll(definition.pattern)) {

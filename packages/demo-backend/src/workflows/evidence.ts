@@ -8,6 +8,7 @@ import {
 } from "@neurofence/contracts/types";
 import { RequestContext } from "../context";
 import { canonical, hash, requireValue } from "../shared/values";
+import { resolveCompanyConfig } from "@neurofence/contracts/company";
 
 export async function evidenceOperation(ctx: RequestContext) {
   const {
@@ -52,9 +53,21 @@ export async function evidenceOperation(ctx: RequestContext) {
     });
   }
   if (action === "retention-preview" || action === "purge") {
-    const cutoff = Date.now() - num(state.settings.days, 90) * 86400000;
     const expired = state.data.traces.filter(
-      (t) => inScope(t, "traces") && num(t.ts) < cutoff && !t.contentPurgedAt,
+      (t) =>
+        inScope(t, "traces") &&
+        num(t.ts) <
+          Date.now() -
+            num(
+              resolveCompanyConfig(
+                ctx.company,
+                session.environment,
+                str(t.project),
+              ).values.days,
+              90,
+            ) *
+              86400000 &&
+        !t.contentPurgedAt,
     );
     const eligible = expired.filter(
       (t) =>
@@ -67,6 +80,7 @@ export async function evidenceOperation(ctx: RequestContext) {
     const token = await hash(
       canonical({
         settings: state.settings.version,
+        companyConfigVersion: ctx.company.publishedVersion,
         records: eligible.map((t) => [t.id, t.version]).sort(),
       }),
     );

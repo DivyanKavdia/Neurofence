@@ -12,6 +12,7 @@ import { inspect, InspectionStage } from "../execution/inspect";
 import { runModel } from "../execution/model";
 import { runTool } from "../execution/tool";
 import { hash, requireValue } from "../shared/values";
+import { resolveCompanyConfig } from "@neurofence/contracts/company";
 
 export async function handleRuntime(ctx: RequestContext) {
   const {
@@ -76,16 +77,17 @@ export async function handleRuntime(ctx: RequestContext) {
       : undefined;
     const trace =
       id === "tool"
-        ? runTool(state, session, body, find, audit)
+        ? runTool(runtimeState(), session, body, find, audit)
         : await runModel(
             providerConnector,
-            state,
+            runtimeState(),
             session,
             body,
             find,
             audit,
             checkpoint,
           );
+    trace.companyConfigVersion = ctx.company.publishedVersion;
     if (!state.data.traces.some((t) => t.id === trace.id))
       state.data.traces.unshift(trace);
     if (external) {
@@ -118,8 +120,36 @@ export async function handleRuntime(ctx: RequestContext) {
         notes: [],
       });
     return respond(trace);
+    function runtimeState() {
+      const project =
+        id === "tool"
+          ? str(find("agents", str(body.agent)).project)
+          : str(body.project);
+      const effective = resolveCompanyConfig(
+        ctx.company,
+        session.environment,
+        project,
+      );
+      requireValue(
+        arr(effective.values.modules).includes(id === "tool" ? "M5" : "M4"),
+        "The runtime module is disabled for this scope.",
+      );
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          ...effective.values,
+          companyStatus: ctx.company.status,
+        },
+      };
+    }
   }
   if (resource === "inspect" && method === "POST") {
+    requireValue(
+      arr(state.settings.modules).includes("M3"),
+      "The Guardrails module is not enabled.",
+    );
+    permission(can(session, "run") ? "run" : "policies");
     requireValue(
       can(session, "run") || can(session, "policies"),
       "Your role cannot run simulations.",

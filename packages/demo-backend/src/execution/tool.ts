@@ -22,6 +22,7 @@ import {
 } from "./budgets";
 import { inspect } from "./inspect";
 import { published } from "./policy";
+import { companyPolicy, companyRuntimeFailure } from "../company/runtime";
 
 export function runTool(
   state: State,
@@ -66,6 +67,10 @@ export function runTool(
   };
   const distributionError = distributionFailure(state);
   if (distributionError) return deny(distributionError);
+  const companyError = companyRuntimeFailure(state, project, 0.08);
+  if (companyError) return deny(companyError);
+  if (!arr(state.settings.allowedToolActions).includes(str(tool.action)))
+    return deny("Tool action is disabled by company configuration");
   const chain = delegationChain(state, agent, arr<string>(body.delegates));
   if (!chain)
     return deny(
@@ -87,9 +92,9 @@ export function runTool(
     );
     if (limit) return deny(limit);
   }
-  const policy = published(
-    find("policies", str(project.policy)),
-    state.data.traces.length,
+  const policy = companyPolicy(
+    state,
+    published(find("policies", str(project.policy)), state.data.traces.length),
   );
   if (!["Active", "Canary"].includes(str(policy.status)))
     return deny("Publish the bound policy first");
@@ -178,6 +183,7 @@ export function runTool(
       responsePreset: str(body.responsePreset || "safe"),
       toolVersion: tool.version,
       projectVersion: project.version,
+      companyConfigVersion: state.settings.companyConfigVersion || 1,
     });
     const matches = state.data.approvals.filter(
       (a) => a.fingerprint === fingerprint && num(a.expires) > Date.now(),

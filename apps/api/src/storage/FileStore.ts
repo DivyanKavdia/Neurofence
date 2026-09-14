@@ -10,9 +10,29 @@ import {
 } from "node:fs";
 import { resolve } from "node:path";
 import { ApiError, State } from "@neurofence/contracts/types";
+import { CompanyDirectory } from "@neurofence/contracts/company";
 import { Store } from "@neurofence/demo-backend";
 
 export class FileStore implements Store {
+  readDirectory() {
+    const file = resolve(this.storeDir, "companies.v1.json");
+    if (!existsSync(file)) return undefined;
+    const directory = JSON.parse(readFileSync(file, "utf8"));
+    if (directory.schema !== 1 || !Array.isArray(directory.companies))
+      throw new ApiError(
+        500,
+        "COMPANY_STORE_INVALID",
+        "Company data requires recovery.",
+      );
+    return directory as CompanyDirectory;
+  }
+  writeDirectory(directory: CompanyDirectory) {
+    this.atomicWrite(
+      resolve(this.storeDir, "companies.v1.json"),
+      directory,
+      this.storeDir,
+    );
+  }
   private scopesDir: string;
   constructor(private storeDir: string) {
     mkdirSync(storeDir, { recursive: true });
@@ -43,13 +63,20 @@ export class FileStore implements Store {
   }
   write(key: string, state: State) {
     const file = this.path(key);
+    this.atomicWrite(file, state, this.scopesDir);
+  }
+  private atomicWrite(
+    file: string,
+    state: State | CompanyDirectory,
+    parent: string,
+  ) {
     writeFileSync(file + ".tmp", JSON.stringify(state), {
       mode: 0o600,
       flush: true,
     });
     renameSync(file + ".tmp", file);
     if (process.platform !== "win32") {
-      const directory = openSync(this.scopesDir, "r");
+      const directory = openSync(parent, "r");
       try {
         fsyncSync(directory);
       } finally {

@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "NeuralFence dummy control BFF",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "description": "Development simulation only. X-Demo-* headers select a demo session and are not authentication. The default runtime is synthetic; the local API can optionally execute governed text-model requests through LiteLLM. See docs/api.md for the production adapter boundary. Includes normalized inventory/usage imports, dictionary inspection, workflow authority, evidence custody, policy distribution and assurance lifecycle commands."
   },
   "servers": [
@@ -288,7 +288,8 @@
               }
             }
           }
-        }
+        },
+        "summary": "Update deployment and health demo scenarios; company settings use company drafts"
       }
     },
     "/api/v1/reset": {
@@ -830,20 +831,13 @@
                           "maxItems": 200
                         }
                       },
-                      "required": [
-                        "externalId",
-                        "name",
-                        "type"
-                      ],
+                      "required": ["externalId", "name", "type"],
                       "additionalProperties": false
                     },
                     "maxItems": 250
                   }
                 },
-                "required": [
-                  "source",
-                  "entries"
-                ],
+                "required": ["source", "entries"],
                 "additionalProperties": false
               }
             }
@@ -942,20 +936,13 @@
                           "maxItems": 200
                         }
                       },
-                      "required": [
-                        "externalId",
-                        "name",
-                        "type"
-                      ],
+                      "required": ["externalId", "name", "type"],
                       "additionalProperties": false
                     },
                     "maxItems": 250
                   }
                 },
-                "required": [
-                  "source",
-                  "entries"
-                ],
+                "required": ["source", "entries"],
                 "additionalProperties": false
               }
             }
@@ -1086,9 +1073,7 @@
                   },
                   "currency": {
                     "type": "string",
-                    "enum": [
-                      "INR"
-                    ]
+                    "enum": ["INR"]
                   },
                   "inputRate": {
                     "type": "number",
@@ -1211,21 +1196,13 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "externalId",
-                        "project",
-                        "model",
-                        "ts"
-                      ],
+                      "required": ["externalId", "project", "model", "ts"],
                       "additionalProperties": false
                     },
                     "maxItems": 250
                   }
                 },
-                "required": [
-                  "source",
-                  "entries"
-                ],
+                "required": ["source", "entries"],
                 "additionalProperties": false
               }
             }
@@ -1317,21 +1294,13 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "externalId",
-                        "project",
-                        "model",
-                        "ts"
-                      ],
+                      "required": ["externalId", "project", "model", "ts"],
                       "additionalProperties": false
                     },
                     "maxItems": 250
                   }
                 },
-                "required": [
-                  "source",
-                  "entries"
-                ],
+                "required": ["source", "entries"],
                 "additionalProperties": false
               }
             }
@@ -1395,12 +1364,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "trace",
-                  "cost",
-                  "invoice",
-                  "reason"
-                ],
+                "required": ["trace", "cost", "invoice", "reason"],
                 "additionalProperties": false
               }
             }
@@ -1456,10 +1420,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "trace",
-                  "reason"
-                ],
+                "required": ["trace", "reason"],
                 "additionalProperties": false
               }
             }
@@ -1515,10 +1476,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "trace",
-                  "reason"
-                ],
+                "required": ["trace", "reason"],
                 "additionalProperties": false
               }
             }
@@ -1617,10 +1575,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "token",
-                  "reason"
-                ],
+                "required": ["token", "reason"],
                 "additionalProperties": false
               }
             }
@@ -1754,9 +1709,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "control"
-                ],
+                "required": ["control"],
                 "additionalProperties": false
               }
             }
@@ -1808,9 +1761,7 @@
                     "maximum": 86400
                   }
                 },
-                "required": [
-                  "ttl"
-                ],
+                "required": ["ttl"],
                 "additionalProperties": false
               }
             }
@@ -1864,16 +1815,10 @@
                   },
                   "outcome": {
                     "type": "string",
-                    "enum": [
-                      "success",
-                      "failure"
-                    ]
+                    "enum": ["success", "failure"]
                   }
                 },
-                "required": [
-                  "bundle",
-                  "outcome"
-                ],
+                "required": ["bundle", "outcome"],
                 "additionalProperties": false
               }
             }
@@ -1957,11 +1902,7 @@
                     "maxItems": 4
                   }
                 },
-                "required": [
-                  "name",
-                  "terms",
-                  "stages"
-                ],
+                "required": ["name", "terms", "stages"],
                 "additionalProperties": false
               }
             }
@@ -2015,11 +1956,7 @@
                   },
                   "schedule": {
                     "type": "string",
-                    "enum": [
-                      "Manual",
-                      "Daily",
-                      "Weekly"
-                    ]
+                    "enum": ["Manual", "Daily", "Weekly"]
                   },
                   "nextRunAt": {
                     "type": "integer",
@@ -2027,10 +1964,7 @@
                     "maximum": 8640000000000000.0
                   }
                 },
-                "required": [
-                  "id",
-                  "schedule"
-                ],
+                "required": ["id", "schedule"],
                 "additionalProperties": false
               }
             }
@@ -2093,12 +2027,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "id",
-                  "digest",
-                  "publisher",
-                  "license"
-                ],
+                "required": ["id", "digest", "publisher", "license"],
                 "additionalProperties": false
               }
             }
@@ -2211,6 +2140,1155 @@
           }
         }
       }
+    },
+    "/api/v1/companies": {
+      "get": {
+        "operationId": "get_companies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Operator company directory"
+      },
+      "post": {
+        "operationId": "post_companies",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyOnboarding"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Onboard company and first demo administrator"
+      }
+    },
+    "/api/v1/companies/{id}/status": {
+      "post": {
+        "operationId": "post_companies_id_status",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Operator status using current company version"
+      }
+    },
+    "/api/v1/companies/{id}/entitlements": {
+      "post": {
+        "operationId": "post_companies_id_entitlements",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Operator entitlements using current company version"
+      }
+    },
+    "/api/v1/companies/{id}/provisioning": {
+      "post": {
+        "operationId": "post_companies_id_provisioning",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Operator provisioning using current company version"
+      }
+    },
+    "/api/v1/company": {
+      "get": {
+        "operationId": "get_company",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Current company administration for authorized admin, review and audit roles"
+      }
+    },
+    "/api/v1/company/effective": {
+      "get": {
+        "operationId": "get_company_effective",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "An accessible application ID; omit for environment defaults."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Published effective configuration in current environment"
+      }
+    },
+    "/api/v1/company/config/draft": {
+      "post": {
+        "operationId": "post_company_config_draft",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyDraft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company configuration draft using current company version"
+      }
+    },
+    "/api/v1/company/config/validate": {
+      "post": {
+        "operationId": "post_company_config_validate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company configuration validate using current company version"
+      }
+    },
+    "/api/v1/company/config/submit": {
+      "post": {
+        "operationId": "post_company_config_submit",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company configuration submit using current company version"
+      }
+    },
+    "/api/v1/company/config/approve": {
+      "post": {
+        "operationId": "post_company_config_approve",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company configuration approve using current company version"
+      }
+    },
+    "/api/v1/company/config/reject": {
+      "post": {
+        "operationId": "post_company_config_reject",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company configuration reject using current company version"
+      }
+    },
+    "/api/v1/company/config/publish": {
+      "post": {
+        "operationId": "post_company_config_publish",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company configuration publish using current company version"
+      }
+    },
+    "/api/v1/company/config/discard": {
+      "post": {
+        "operationId": "post_company_config_discard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company configuration discard using current company version"
+      }
+    },
+    "/api/v1/company/config/rollback": {
+      "post": {
+        "operationId": "post_company_config_rollback",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company configuration rollback using current company version"
+      }
+    },
+    "/api/v1/company/members": {
+      "post": {
+        "operationId": "post_company_members",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company members using current company version"
+      }
+    },
+    "/api/v1/company/members/{id}": {
+      "patch": {
+        "operationId": "patch_company_members_id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company members/{id} using current company version"
+      }
+    },
+    "/api/v1/company/teams": {
+      "post": {
+        "operationId": "post_company_teams",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company teams using current company version"
+      }
+    },
+    "/api/v1/company/teams/{id}": {
+      "patch": {
+        "operationId": "patch_company_teams_id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company teams/{id} using current company version"
+      },
+      "delete": {
+        "operationId": "delete_company_teams_id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company teams/{id} using current company version"
+      }
+    },
+    "/api/v1/company/project-teams": {
+      "post": {
+        "operationId": "post_company_project_teams",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company project-teams using current company version"
+      }
+    },
+    "/api/v1/company/environments": {
+      "post": {
+        "operationId": "post_company_environments",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company environments using current company version"
+      }
+    },
+    "/api/v1/company/starter": {
+      "post": {
+        "operationId": "post_company_starter",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company starter using current company version"
+      }
+    },
+    "/api/v1/company/activate": {
+      "post": {
+        "operationId": "post_company_activate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company activate using current company version"
+      }
+    },
+    "/api/v1/company/provisioning": {
+      "post": {
+        "operationId": "post_company_provisioning",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BFF result; list data is an array, other results are objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured BFF error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Company provisioning using current company version"
+      }
     }
   },
   "components": {
@@ -2236,10 +3314,7 @@
     "schemas": {
       "Resource": {
         "type": "object",
-        "required": [
-          "id",
-          "version"
-        ],
+        "required": ["id", "version"],
         "properties": {
           "id": {
             "type": "string"
@@ -2268,16 +3343,10 @@
                 "type": "string"
               }
             },
-            "required": [
-              "correlationId",
-              "revision"
-            ]
+            "required": ["correlationId", "revision"]
           }
         },
-        "required": [
-          "data",
-          "meta"
-        ]
+        "required": ["data", "meta"]
       },
       "Error": {
         "type": "object",
@@ -2298,17 +3367,10 @@
                 "type": "string"
               }
             },
-            "required": [
-              "code",
-              "message",
-              "retryable",
-              "correlationId"
-            ]
+            "required": ["code", "message", "retryable", "correlationId"]
           }
         },
-        "required": [
-          "error"
-        ]
+        "required": ["error"]
       },
       "ModelRequest": {
         "type": "object",
@@ -2330,10 +3392,7 @@
           },
           "failure": {
             "type": "string",
-            "enum": [
-              "",
-              "timeout"
-            ]
+            "enum": ["", "timeout"]
           },
           "concurrency": {
             "type": "integer",
@@ -2344,10 +3403,7 @@
             "description": "Optional agent ID; currently accepted only by mock execution, where grants and workflow limits apply."
           }
         },
-        "required": [
-          "project",
-          "prompt"
-        ]
+        "required": ["project", "prompt"]
       },
       "ToolRequest": {
         "type": "object",
@@ -2371,18 +3427,10 @@
           },
           "responsePreset": {
             "type": "string",
-            "enum": [
-              "safe",
-              "pii",
-              "injection"
-            ]
+            "enum": ["safe", "pii", "injection"]
           }
         },
-        "required": [
-          "agent",
-          "tool",
-          "args"
-        ]
+        "required": ["agent", "tool", "args"]
       },
       "Inspection": {
         "type": "object",
@@ -2398,18 +3446,10 @@
           },
           "stage": {
             "type": "string",
-            "enum": [
-              "Request",
-              "Response",
-              "Tool arguments",
-              "Tool result"
-            ]
+            "enum": ["Request", "Response", "Tool arguments", "Tool result"]
           }
         },
-        "required": [
-          "policy",
-          "text"
-        ]
+        "required": ["policy", "text"]
       },
       "Trace": {
         "allOf": [
@@ -2439,10 +3479,7 @@
               },
               "kind": {
                 "type": "string",
-                "enum": [
-                  "model",
-                  "tool"
-                ]
+                "enum": ["model", "tool"]
               },
               "decision": {
                 "type": "string"
@@ -2499,20 +3536,14 @@
         "properties": {
           "decision": {
             "type": "string",
-            "enum": [
-              "Approved",
-              "Denied"
-            ]
+            "enum": ["Approved", "Denied"]
           },
           "reason": {
             "type": "string",
             "minLength": 5
           }
         },
-        "required": [
-          "decision",
-          "reason"
-        ]
+        "required": ["decision", "reason"]
       },
       "Reason": {
         "type": "object",
@@ -2522,14 +3553,222 @@
             "minLength": 5
           }
         },
-        "required": [
-          "reason"
-        ]
+        "required": ["reason"]
       },
       "Fields": {
         "type": "object",
         "description": "Collection-specific validated fields are defined in packages/demo-backend/src/resources/schema.ts and the API handoff. Unknown fields are rejected on resource create/edit.",
         "additionalProperties": true
+      },
+      "CompanyValues": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "brandColor": {
+            "type": "string"
+          },
+          "logo": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "domains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "density": {
+            "type": "string"
+          },
+          "landingPage": {
+            "type": "string"
+          },
+          "modules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "residency": {
+            "type": "string"
+          },
+          "retention": {
+            "type": "string"
+          },
+          "days": {
+            "type": "number"
+          },
+          "rawContent": {
+            "type": "boolean"
+          },
+          "fourEyes": {
+            "type": "boolean"
+          },
+          "maxTokens": {
+            "type": "number"
+          },
+          "mandatoryPii": {
+            "type": "boolean"
+          },
+          "mandatoryInjection": {
+            "type": "boolean"
+          },
+          "allowedProviders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowedModels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowedToolActions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requestLimit": {
+            "type": "number"
+          },
+          "monthlyBudget": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "notifications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notificationEmail": {
+            "type": "string"
+          },
+          "identityMode": {
+            "type": "string"
+          },
+          "issuer": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "secretRef": {
+            "type": "string"
+          },
+          "groupMappings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["group", "role"],
+              "properties": {
+                "group": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "sessionMinutes": {
+            "type": "number"
+          }
+        }
+      },
+      "CompanyDraft": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reason"],
+        "properties": {
+          "values": {
+            "$ref": "#/components/schemas/CompanyValues"
+          },
+          "locked": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "overrides": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "scope", "target", "environment", "values"],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "scope": {
+                  "enum": ["team", "environment", "project"]
+                },
+                "target": {
+                  "type": "string"
+                },
+                "environment": {
+                  "type": "string"
+                },
+                "values": {
+                  "$ref": "#/components/schemas/CompanyValues"
+                }
+              }
+            }
+          },
+          "rolePermissions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "CompanyOnboarding": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slug", "name", "ownerName", "ownerEmail"],
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ownerName": {
+            "type": "string"
+          },
+          "ownerEmail": {
+            "type": "string"
+          },
+          "environments": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "entitlements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
       }
     }
   }

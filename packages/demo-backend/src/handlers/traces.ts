@@ -1,5 +1,7 @@
 import { CollectionContext } from "../context";
 import { requireValue } from "../shared/values";
+import { resolveCompanyConfig } from "@neurofence/contracts/company";
+import { str } from "@neurofence/contracts/types";
 
 export function handleTraceActions(ctx: CollectionContext) {
   const { collection } = ctx;
@@ -9,7 +11,11 @@ export function handleTraceActions(ctx: CollectionContext) {
     if (action === "reveal") {
       permission("reveal");
       requireValue(
-        state.settings.rawContent && trace.content,
+        resolveCompanyConfig(
+          ctx.company,
+          session.environment,
+          str(trace.project),
+        ).values.rawContent && trace.content,
         "Raw content was not retained for this trace. Enable explicit content retention for future demo requests.",
       );
       audit(

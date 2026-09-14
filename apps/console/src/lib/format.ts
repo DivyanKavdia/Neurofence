@@ -12,5 +12,7 @@ export const date = (value: unknown) =>
     ? new Date(num(value)).toLocaleString("en-IN", {
         dateStyle: "medium",
         timeStyle: "short",
+        timeZone:
+          document.documentElement.dataset.companyTimezone || "Asia/Kolkata",
       })
     : "—";

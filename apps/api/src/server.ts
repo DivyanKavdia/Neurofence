@@ -13,6 +13,13 @@ import { configuredLiteLLM } from "./providers/litellm";
 import { FileStore } from "./storage/FileStore";
 
 // Local development only: X-Demo-* headers are a scope preview, not authentication.
+if (
+  process.env.NODE_ENV === "production" ||
+  (process.env.NF_AUTH_MODE && process.env.NF_AUTH_MODE !== "demo")
+)
+  throw new Error(
+    "This HTTP adapter uses demo identities. Connect a verified identity adapter and transactional storage before serving production traffic.",
+  );
 const root = resolve(process.env.NF_WEB_ROOT || "."),
   storeDir = resolve(process.env.NF_MOCK_DATA || ".runtime/data");
 const backend = new MockBackend(

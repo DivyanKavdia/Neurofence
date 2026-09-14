@@ -1,8 +1,39 @@
 import { ApiError, State } from "@neurofence/contracts/types";
+import { CompanyDirectory } from "@neurofence/contracts/company";
 import { createState } from "../fixtures/seed";
 import { Store } from "./store";
 
 export class BrowserStore implements Store {
+  readDirectory() {
+    const raw = localStorage.getItem("neurofence.companies.v1");
+    if (!raw) return undefined;
+    try {
+      const directory = JSON.parse(raw);
+      if (directory.schema !== 1 || !Array.isArray(directory.companies))
+        throw new Error();
+      return directory as CompanyDirectory;
+    } catch {
+      throw new ApiError(
+        500,
+        "COMPANY_STORE_INVALID",
+        "Company data could not be read. Restore a valid browser backup before continuing.",
+      );
+    }
+  }
+  writeDirectory(directory: CompanyDirectory) {
+    try {
+      localStorage.setItem(
+        "neurofence.companies.v1",
+        JSON.stringify(directory),
+      );
+    } catch {
+      throw new ApiError(
+        507,
+        "STORAGE_FULL",
+        "Company changes were not saved. Free browser storage and retry.",
+      );
+    }
+  }
   read(key: string) {
     try {
       const saved = JSON.parse(

@@ -130,7 +130,11 @@ test("LiteLLM scope, operator residency, approval and hard budget constraints pr
       (await backend.request(call("catalog"))).data.decision,
       "DENY",
     );
-    backend.setSession({ ...backend.session, role: "Auditor" });
+    backend.setSession({
+      ...backend.session,
+      role: "Auditor",
+      user: "Audit reviewer",
+    });
     await assert.rejects(
       backend.request(call("role")),
       (e) => e.code === "FORBIDDEN",

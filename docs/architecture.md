@@ -4,14 +4,14 @@ Neurofence currently consists of a React console, a shared TypeScript demo contr
 
 ## Code boundaries
 
-| Area | Owns | Depends on |
-| --- | --- | --- |
-| `apps/console` | Pages, editors, navigation, local session preview and transport selection | Shared contracts; demo backend in browser mode |
-| `apps/api` | HTTP envelopes, loopback serving, persistent file storage and LiteLLM connection configuration | Shared contracts and demo backend |
-| `packages/contracts` | Resource/transport types, capabilities, provider interface and budget attribution | No application or filesystem code |
-| `packages/demo-backend` | Demo state, authorization checks, versioning, approvals, budget decisions, traces and synthetic jobs | Contracts and an optional injected `ProviderConnector` |
-| `integrations/litellm` | Runtime entry point, deployment configuration and source provenance | Tracked `vendor/litellm` source and pinned dependency image |
-| `infra` | Dependency provisioning for future backend services | Operator-supplied account, state and deployment settings |
+| Area                    | Owns                                                                                                 | Depends on                                                  |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `apps/console`          | Pages, editors, navigation, local session preview and transport selection                            | Shared contracts; demo backend in browser mode              |
+| `apps/api`              | HTTP envelopes, loopback serving, persistent file storage and LiteLLM connection configuration       | Shared contracts and demo backend                           |
+| `packages/contracts`    | Resource/transport types, capabilities, provider interface and budget attribution                    | No application or filesystem code                           |
+| `packages/demo-backend` | Demo state, authorization checks, versioning, approvals, budget decisions, traces and synthetic jobs | Contracts and an optional injected `ProviderConnector`      |
+| `integrations/litellm`  | Runtime entry point, deployment configuration and source provenance                                  | Tracked `vendor/litellm` source and pinned dependency image |
+| `infra`                 | Dependency provisioning for future backend services                                                  | Operator-supplied account, state and deployment settings    |
 
 Imports from shared code use `@neurofence/contracts/*` and `@neurofence/demo-backend`, resolved by the root TypeScript configuration and build. Inside an area, use relative imports. Application code must not become a dependency of a shared package. Node filesystem code and provider secrets belong in the API, outside the browser bundle.
 
@@ -37,19 +37,21 @@ The [API guide](api.md) specifies exact errors, state transitions and privacy be
 
 ## State and migration
 
+Company-wide configuration and identity data live in a separate directory managed by `packages/demo-backend/src/company/`. Every request resolves active membership and server-derived capabilities before reading environment data. The shared resolver applies company, team, environment and application values. Runtime evaluation supplements each published resource policy with company constraints. See [Company administration](company-administration.md) for the exact precedence, lifecycle and production boundaries.
+
 Browser data is keyed by tenant and environment. The file store encodes that same scope into a private filename and uses flushed writes plus atomic replacement. Existing browser fixtures and unambiguous legacy file names still migrate; the legacy fixture supports that behavior and its regression test.
 
 This is one serialized backend instance, not a distributed database. Ordinary repeat receipts live in memory; external model receipts are also persisted with the workspace. Production needs transactional shared reservations and receipts, authenticated principals, reconciliation workers and event delivery. Do not infer production guarantees from a passing demo workflow.
 
 ## What is implemented versus planned
 
-| Capability | Current implementation | Production handoff |
-| --- | --- | --- |
-| Console and review workflows | Interactive pages, role preview, versioned edits and synthetic records | Authenticated sessions and production capabilities |
-| Model execution | Browser simulation or optional governed LiteLLM text chat; buffered response inspection | Production identity, real detectors, reconciliation and separately specified streaming/other endpoints |
-| MCP and workforce controls | Exact sample approvals and simulated activity | Live tool execution, auth brokerage and collection agents |
-| Inventory, assurance and evidence | Editable inventory, synthetic jobs, exports and audit records | Discovery, real scanners, retention deletion and signed evidence |
-| Persistence and quotas | Browser/file store and serialized sample transactions | PostgreSQL, distributed reservations/cache, durable events and analytics |
-| Hosting | Static GitHub Pages console and local processes | Reviewed Terraform plans, service images, ingress and account-specific deployment |
+| Capability                        | Current implementation                                                                  | Production handoff                                                                                     |
+| --------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Console and review workflows      | Interactive pages, role preview, versioned edits and synthetic records                  | Authenticated sessions and production capabilities                                                     |
+| Model execution                   | Browser simulation or optional governed LiteLLM text chat; buffered response inspection | Production identity, real detectors, reconciliation and separately specified streaming/other endpoints |
+| MCP and workforce controls        | Exact sample approvals and simulated activity                                           | Live tool execution, auth brokerage and collection agents                                              |
+| Inventory, assurance and evidence | Editable inventory, synthetic jobs, exports and audit records                           | Discovery, real scanners, retention deletion and signed evidence                                       |
+| Persistence and quotas            | Browser/file store and serialized sample transactions                                   | PostgreSQL, distributed reservations/cache, durable events and analytics                               |
+| Hosting                           | Static GitHub Pages console and local processes                                         | Reviewed Terraform plans, service images, ingress and account-specific deployment                      |
 
 The [product scope](product-scope.md) preserves the supplied screen/workflow mapping. The [infrastructure guide](../infra/README.md) maps PostgreSQL, Valkey, Kafka, ClickHouse, object storage, OPA, secrets and telemetry to future consumers. Those dependencies are deliberately optional for frontend development.

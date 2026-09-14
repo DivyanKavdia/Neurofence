@@ -1,3 +1,4 @@
+const { names, publishCompany } = require("../helpers/company.cjs");
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { MockBackend, MemoryStore } = require("../../.runtime/backend.cjs");
@@ -5,14 +6,8 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 function fixture() {
   const store = new MemoryStore(),
     api = new MockBackend(store, 0);
-  const role = (
-    role,
-    user = role === "Security admin"
-      ? "Mira Kapoor"
-      : role === "Developer"
-        ? "Priya Shah"
-        : "Divyan Kavdia",
-  ) => api.setSession({ ...api.session, role, user });
+  const role = (role, user = names[role]) =>
+    api.setSession({ ...api.session, role, user });
   const read = async () =>
     (await api.request({ path: "/api/v1/workspace" })).data;
   const send = async (
@@ -441,12 +436,7 @@ test("API content privacy, module entitlements, retention settings and timeout r
   );
   f.role("Platform admin");
   state = await f.read();
-  await f.send(
-    "/api/v1/settings",
-    { modules: ["M1", "M9"] },
-    state.settings,
-    "PATCH",
-  );
+  await publishCompany(f.api, { modules: ["M1", "M9"] });
   await assert.rejects(
     f.send("/api/v1/runtime/model", { project: "claims", prompt: "Hello" }),
     /not enabled/,

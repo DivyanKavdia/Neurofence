@@ -23,25 +23,26 @@ Errors use `{ "error": { "code": "...", "message": "...", "retryable": false, "c
 
 All paths below have prefix `/api/v1`. Generic CRUD applies only where the domain supports it; revocation, archival and published history are retained through actions.
 
-| Resources | Reads / writes and actions |
-| --- | --- |
-| `workspace`, `session`, `capabilities`, `health` | GET aggregate/session/entitlements/dependency status |
-| `settings`, `reset` | PATCH versioned settings; POST restore the current tenant/environment fixture |
-| `providers`, `models` | Create/edit providers; provider `validate`, `discover`, `publish`, `status`; model `approve` |
-| `projects` | Create/edit; `issue`, `rotate`, `revoke`, `status`; plaintext demo key appears once in the action response |
-| `policies`, `routes`, `budgets` | Create; `draft`, `simulate`, `submit`, `canary`, `publish`, `promote`, `rollback` |
-| `agents`, `servers`, `tools` | Create/edit; agent `workflow` reset/status, server `discover`, tool `approve` and status |
-| `assets` | Create/edit, `snapshot` AI-BOM, status and linked exceptions |
-| `runtime/model`, `runtime/tool`, `inspect` | POST governed sample execution or inspection; produce structured decisions and stages |
-| `traces` | Read; `reveal`, `replay`, `export`; replay prepares the playground outside Production |
-| `approvals` | Read; `decision` with Approved/Denied and a review reason; request creation follows the originating workflow |
-| `incidents` | Read; `review`, `contain`, `revoke`, `resolve`, `reopen`, `export` with reasons |
-| `workforce`, `workforcePolicies` | Create sample events, edit event control, create/edit account/activity policies |
-| `exceptions` | Create time-bound request; approval updates the exception status |
-| `campaigns`, `scans` | Create/edit; `run`, `retest`, `remediate`, `gate`; job history and findings retained |
-| `jobs` | Poll execution state/progress; a completed job refreshes its associated resource |
-| `integrations`, `members`, `savedViews` | Create/edit/delete; integration `test`; member invitation is a sample record only |
-| `detectors`, `audit` | Read; detector status changes; append-only audit is emitted by actions |
+| Resources                                        | Reads / writes and actions                                                                                   |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `workspace`, `session`, `capabilities`, `health` | GET aggregate/session/entitlements/dependency status                                                         |
+| `settings`, `reset`                              | PATCH deployment/health demo scenarios; POST restore environment fixtures, preserving company configuration  |
+| `providers`, `models`                            | Create/edit providers; provider `validate`, `discover`, `publish`, `status`; model `approve`                 |
+| `projects`                                       | Create/edit; `issue`, `rotate`, `revoke`, `status`; plaintext demo key appears once in the action response   |
+| `policies`, `routes`, `budgets`                  | Create; `draft`, `simulate`, `submit`, `canary`, `publish`, `promote`, `rollback`                            |
+| `agents`, `servers`, `tools`                     | Create/edit; agent `workflow` reset/status, server `discover`, tool `approve` and status                     |
+| `assets`                                         | Create/edit, `snapshot` AI-BOM, status and linked exceptions                                                 |
+| `runtime/model`, `runtime/tool`, `inspect`       | POST governed sample execution or inspection; produce structured decisions and stages                        |
+| `traces`                                         | Read; `reveal`, `replay`, `export`; replay prepares the playground outside Production                        |
+| `approvals`                                      | Read; `decision` with Approved/Denied and a review reason; request creation follows the originating workflow |
+| `incidents`                                      | Read; `review`, `contain`, `revoke`, `resolve`, `reopen`, `export` with reasons                              |
+| `workforce`, `workforcePolicies`                 | Create sample events, edit event control, create/edit account/activity policies                              |
+| `exceptions`                                     | Create time-bound request; approval updates the exception status                                             |
+| `campaigns`, `scans`                             | Create/edit; `run`, `retest`, `remediate`, `gate`; job history and findings retained                         |
+| `jobs`                                           | Poll execution state/progress; a completed job refreshes its associated resource                             |
+| `integrations`, `savedViews`                     | Create/edit/delete; integration `test`                                                                       |
+| `members`                                        | Read company memberships; mutation uses the company administration API                                       |
+| `detectors`, `audit`                             | Read; detector status changes; append-only audit is emitted by actions                                       |
 
 ## State transitions
 
@@ -71,22 +72,26 @@ The HTTP file store uses an encoded scope name under its private `scopes/` direc
 
 These POST commands use `/api/v1/operations/{domain}/{action}` and the normal idempotency envelope. Updates to existing records require `If-Match`; inventory weight changes use the settings version. Import previews perform validation without committing the imported records. Batches are atomic and limited to 250 entries.
 
-| Domain / actions | Input and invariants |
-| --- | --- |
-| `inventory/preview`, `inventory/import` | `source` plus `entries[]` with stable `externalId`, name, type, classification, optional owner, links and normalized components. Source + ID is unique within tenant/environment. Imports preserve reviewed ownership. Generic SPDX/CycloneDX files need normalization first. |
-| `inventory/weights` | Integer `protection`, `ownership`, `classification`, `approval` weights totaling 100; requires settings version. |
-| `detectors/save` | Name, literal `terms[]`, `stages[]`; optional existing dictionary ID/version. Built-in implementations cannot be overwritten. Select the detector in a policy draft before publication. |
-| `finops/price` | Model, epoch-ms `effectiveAt`, INR currency and input/output/cache/reasoning rates per million tokens. Effective versions are immutable. |
-| `finops/usage-preview`, `finops/usage-import` | Stable source/entry IDs, project, model, timestamp, disjoint input/output/cache/reasoning token counts and optional cost center. Input excludes cache reads; output excludes reasoning. Matching IDs are unchanged; conflicting usage requires reconciliation. |
-| `finops/reconcile` | Trace ID/version, verified total INR `cost`, invoice reference and reason. Pending synthetic reconciliation jobs must finish first. Adjustments preserve prior amounts and execution receipts; no provider replay occurs. |
-| `evidence/hold`, `evidence/release` | Trace ID/version and custody reason. A hold preserves already retained content but cannot recover purged or never-retained content. |
-| `evidence/retention-preview`, `evidence/purge` | Preview returns an eligibility token and metadata. Purge requires that token plus reason; holds, pending executions and changed previews prevent content deletion. Ledger amounts, trace metadata, receipts and audit are preserved. |
-| `evidence/control`, `evidence/export` | Map a named framework/control, owner, requirement and scoped evidence IDs; optional existing control ID/version. Export uses the control ID and returns a SHA-256 manifest without raw content/arguments. |
+| Domain / actions                                 | Input and invariants                                                                                                                                                                                                                                                                      |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inventory/preview`, `inventory/import`          | `source` plus `entries[]` with stable `externalId`, name, type, classification, optional owner, links and normalized components. Source + ID is unique within tenant/environment. Imports preserve reviewed ownership. Generic SPDX/CycloneDX files need normalization first.             |
+| `inventory/weights`                              | Integer `protection`, `ownership`, `classification`, `approval` weights totaling 100; requires settings version.                                                                                                                                                                          |
+| `detectors/save`                                 | Name, literal `terms[]`, `stages[]`; optional existing dictionary ID/version. Built-in implementations cannot be overwritten. Select the detector in a policy draft before publication.                                                                                                   |
+| `finops/price`                                   | Model, epoch-ms `effectiveAt`, INR currency and input/output/cache/reasoning rates per million tokens. Effective versions are immutable.                                                                                                                                                  |
+| `finops/usage-preview`, `finops/usage-import`    | Stable source/entry IDs, project, model, timestamp, disjoint input/output/cache/reasoning token counts and optional cost center. Input excludes cache reads; output excludes reasoning. Matching IDs are unchanged; conflicting usage requires reconciliation.                            |
+| `finops/reconcile`                               | Trace ID/version, verified total INR `cost`, invoice reference and reason. Pending synthetic reconciliation jobs must finish first. Adjustments preserve prior amounts and execution receipts; no provider replay occurs.                                                                 |
+| `evidence/hold`, `evidence/release`              | Trace ID/version and custody reason. A hold preserves already retained content but cannot recover purged or never-retained content.                                                                                                                                                       |
+| `evidence/retention-preview`, `evidence/purge`   | Preview returns an eligibility token and metadata. Purge requires that token plus reason; holds, pending executions and changed previews prevent content deletion. Ledger amounts, trace metadata, receipts and audit are preserved.                                                      |
+| `evidence/control`, `evidence/export`            | Map a named framework/control, owner, requirement and scoped evidence IDs; optional existing control ID/version. Export uses the control ID and returns a SHA-256 manifest without raw content/arguments.                                                                                 |
 | `distribution/build`, `distribution/acknowledge` | Build with TTL 60–86400 seconds; acknowledge latest bundle ID/version and success/failure outcome. Building activates fail-closed acknowledgement enforcement. Expired, unacknowledged or stale published configuration cannot execute. Delivery is simulated; hashes are not signatures. |
-| `assurance/schedule`, `assurance/provenance` | Schedule a campaign ID/version with Manual/Daily/Weekly and next-run epoch milliseconds; or record a scan ID/version with SHA-256 digest, publisher and license. Changed provenance invalidates remediation/release and requires retest. |
+| `assurance/schedule`, `assurance/provenance`     | Schedule a campaign ID/version with Manual/Daily/Weekly and next-run epoch milliseconds; or record a scan ID/version with SHA-256 digest, publisher and license. Changed provenance invalidates remediation/release and requires retest.                                                  |
 
 New read-only collections are `prices`, `controls` and `distributions`; mutate them through workflow commands. Governance owner/Security admin can manage custody and mappings; Auditor can export mapped evidence. Developer/Agent owner cannot read other owners' evidence mappings or distribution bundles. Module entitlements apply to workflow commands.
 
 `runtime/tool` also accepts an ordered `delegates[]` list and a mock `responsePreset` (`safe`, `pii`, `injection`). The approval fingerprint includes the delegation versions and response fixture. `runtime/model` accepts an optional agent ID only for mock execution; live agent calls fail closed until operator model binding exists. Agent fields include `allowedModels`, `allowedDelegates`, `maxCost` and `maxModelCalls`; absent grants remain empty. Both paths check application credential expiry.
 
 `inspect` supports Request, Response, Tool arguments and Tool result. Dictionary matching is case-insensitive and literal. Findings expose detector/rule IDs and UTF-16 offsets, not raw matched values. Confidence 1 denotes an exact fixture match. Inputs over 200,000 characters are rejected; exceeding 1,000 matches fails closed instead of partially inspecting content.
+
+## Company administration API
+
+See [company administration](company-administration.md#code-and-api-map) for onboarding, memberships, teams, configuration releases, overrides and provisioning endpoints. Company mutations use the company version in `If-Match`; draft publication always requires an independent active reviewer. Company configuration is enforced by the same shared workflow engine in browser and HTTP mode.

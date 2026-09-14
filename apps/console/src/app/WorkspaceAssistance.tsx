@@ -3,12 +3,45 @@ import { useConsole } from "./ConsoleContext";
 import { Button } from "../components/Button";
 import { Empty } from "../components/feedback";
 import { navigation } from "./navigation";
+import { budgetSpend } from "@neurofence/contracts/ledger";
+import { num } from "@neurofence/contracts/types";
 
 export function ActionQueue() {
   const ctx = useConsole();
   const items = [
+    ...(ctx.state.company?.administration?.draft?.status === "Pending" &&
+    arr(ctx.state.settings.notifications).includes("Approval requests")
+      ? [
+          {
+            id: "company-review",
+            name: "Company configuration review",
+            detail: ctx.state.company.administration.draft.reason,
+            page: "company",
+            tab: "Configuration",
+          },
+        ]
+      : []),
+    ...ctx.state.data.budgets
+      .filter(
+        (b) =>
+          arr(ctx.state.settings.notifications).includes("Budget alerts") &&
+          b.status === "Active" &&
+          budgetSpend(ctx.state, b) >=
+            (num(b.limit) * num(b.threshold, 80)) / 100,
+      )
+      .map((b) => ({
+        id: `budget-${b.id}`,
+        name: str(b.name),
+        detail: "Budget alert threshold reached",
+        page: "budgets",
+        tab: "Budget hierarchy",
+      })),
     ...ctx.state.data.approvals
-      .filter((r) => r.status === "Pending")
+      .filter(
+        (r) =>
+          r.status === "Pending" &&
+          arr(ctx.state.settings.notifications).includes("Approval requests"),
+      )
       .map((r) => ({
         id: r.id,
         name: str(r.name),
@@ -17,7 +50,11 @@ export function ActionQueue() {
         tab: "Approvals",
       })),
     ...ctx.state.data.incidents
-      .filter((r) => ["Open", "Investigating"].includes(str(r.status)))
+      .filter(
+        (r) =>
+          ["Open", "Investigating"].includes(str(r.status)) &&
+          arr(ctx.state.settings.notifications).includes("Security incidents"),
+      )
       .map((r) => ({
         id: r.id,
         name: str(r.title),
@@ -72,6 +109,8 @@ export function WorkspaceHelp() {
   const ctx = useConsole(),
     nav = navigation.find((n) => n.id === ctx.page);
   const help: Record<string, string> = {
+    company:
+      "Manage company memberships and teams, then configure defaults and scoped overrides. Save, validate and submit a draft; switch to an independent reviewer to approve it, then publish as a company admin. Operator preview manages onboarding and provisioning requests.",
     inventory:
       "Import a normalized inventory file, preview the changes, then assign ownership and review the four risk contributors. Use Relationships to follow linked assets.",
     gateway:

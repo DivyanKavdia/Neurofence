@@ -1,4 +1,6 @@
 import { Discovery } from "../features/inventory/Discovery";
+import { CompanyAdmin } from "../features/company/CompanyAdmin";
+import { People } from "../features/company/People";
 import { FinOpsOperations } from "../features/finops/FinOpsOperations";
 import { EvidenceLifecycle } from "../features/governance/EvidenceLifecycle";
 import { PolicyDistribution } from "../features/governance/PolicyDistribution";
@@ -32,6 +34,8 @@ export function Page({ focusId }: { focusId?: string }) {
   const ctx = useConsole(),
     { page, tab, state } = ctx;
   switch (page) {
+    case "company":
+      return <CompanyAdmin />;
     case "overview":
       return <Overview />;
     case "inventory":
@@ -293,13 +297,15 @@ export function Page({ focusId }: { focusId?: string }) {
           />
         );
       if (tab === "Members")
-        return (
-          <Catalog
-            collection="members"
-            title="Workspace members"
-            sub="Invite and manage demo identities. No email is sent."
-            columns={["name", "email", "role", "status"]}
-          />
+        return state.company?.administration ? (
+          <People company={state.company.administration} />
+        ) : (
+          <Panel title="Company memberships">
+            <p>
+              Memberships are managed by a company administrator across all
+              environments.
+            </p>
+          </Panel>
         );
       if (tab === "Settings") return <Settings />;
       return <RoleMatrix />;

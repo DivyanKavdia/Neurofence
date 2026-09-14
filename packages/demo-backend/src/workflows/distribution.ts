@@ -34,6 +34,7 @@ export function configurationPayload(state: State) {
       ) as Json;
   }
   payload.detectors = JSON.parse(JSON.stringify(state.data.detectors));
+  payload.companyConfigVersion = state.settings.companyConfigVersion || 1;
   return canonical(payload);
 }
 

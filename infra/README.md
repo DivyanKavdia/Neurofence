@@ -4,19 +4,19 @@ The frontend works immediately with its mock BFF. These definitions prepare the 
 
 ## Dependency mapping
 
-| Dependency | Local development | AWS / platform Terraform | Future consumer |
-| --- | --- | --- | --- |
-| Transactional state and asset graph | PostgreSQL 16 | Private, encrypted RDS PostgreSQL 16, backups, operator-managed master secret | Control API, policies, inventory, ledger, outbox |
-| Quotas, reservations and cache | Valkey 8 | TLS/auth-enabled two-node ElastiCache Valkey, automatic failover | AI/MCP gateways, FinOps |
-| Durable events | Single-node Apache Kafka | IAM-authenticated MSK Serverless; optional database outbox profile | Telemetry, workers, assurance |
-| Analytics | ClickHouse 25.8 | Single-replica ClickHouse StatefulSet with encrypted EBS PVC | Cost/trace analytics |
-| Evidence, reports and artifacts | S3-compatible MinIO | Private encrypted S3, versioning and 90-day governance object retention | Evidence, scanners, reports |
-| Secrets and encryption | Development Vault | KMS, Secrets Manager, workload IRSA | Providers, MCP auth, database clients |
-| Deterministic policy runtime | OPA | Two OPA pods, default-deny bootstrap | Policy service and gateways |
-| Telemetry | OTel + Prometheus | Two OTel pods and configurable OTLP export | All services |
-| Container hosting | Optional dependency Compose | Private EKS, managed nodes, EBS CSI, VPC CNI network policy, ECR repositories | Future signed backend images |
-| Optional LiteLLM execution | Separate pinned fixture Compose | Reserved ECR/secret slot; optional private deployment and isolated namespace | NeuralFence provider adapter |
-| Enterprise identity | Supplied issuer | Configurable OIDC issuer and client-secret slot | Future identity/control API |
+| Dependency                          | Local development               | AWS / platform Terraform                                                      | Future consumer                                  |
+| ----------------------------------- | ------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------ |
+| Transactional state and asset graph | PostgreSQL 16                   | Private, encrypted RDS PostgreSQL 16, backups, operator-managed master secret | Control API, policies, inventory, ledger, outbox |
+| Quotas, reservations and cache      | Valkey 8                        | TLS/auth-enabled two-node ElastiCache Valkey, automatic failover              | AI/MCP gateways, FinOps                          |
+| Durable events                      | Single-node Apache Kafka        | IAM-authenticated MSK Serverless; optional database outbox profile            | Telemetry, workers, assurance                    |
+| Analytics                           | ClickHouse 25.8                 | Single-replica ClickHouse StatefulSet with encrypted EBS PVC                  | Cost/trace analytics                             |
+| Evidence, reports and artifacts     | S3-compatible MinIO             | Private encrypted S3, versioning and 90-day governance object retention       | Evidence, scanners, reports                      |
+| Secrets and encryption              | Development Vault               | KMS, Secrets Manager, workload IRSA                                           | Providers, MCP auth, database clients            |
+| Deterministic policy runtime        | OPA                             | Two OPA pods, default-deny bootstrap                                          | Policy service and gateways                      |
+| Telemetry                           | OTel + Prometheus               | Two OTel pods and configurable OTLP export                                    | All services                                     |
+| Container hosting                   | Optional dependency Compose     | Private EKS, managed nodes, EBS CSI, VPC CNI network policy, ECR repositories | Future signed backend images                     |
+| Optional LiteLLM execution          | Separate pinned fixture Compose | Reserved ECR/secret slot; optional private deployment and isolated namespace  | NeuralFence provider adapter                     |
+| Enterprise identity                 | Supplied issuer                 | Configurable OIDC issuer and client-secret slot                               | Future identity/control API                      |
 
 The dependency boundary is portable. The frontend calls the same BFF interface in SaaS, private-cloud, on-premises and air-gapped previews. AWS Mumbai is the initial Terraform profile; another cloud requires another infrastructure root using the same dependency contract.
 
@@ -67,17 +67,17 @@ Review and apply `platform.tfplan` from the VPC-connected runner. Populate the a
 
 Bind future services to service account `runtime` in namespace `neuralfence` to use the workload IAM role. Applications retrieve secret references through the AWS SDK; the root does not deploy an external-secrets operator. Split the shared pilot role into individual service roles when final service API permissions are known. The RDS master credential stays operator-only.
 
-| Setting | Source |
-| --- | --- |
-| PostgreSQL host/database/TLS mode | `backend_dependencies.postgres_*` |
-| PostgreSQL application secret | `application_secret_refs["postgres-app"]` |
-| Redis endpoint/TLS/password reference | `backend_dependencies.redis_*` |
-| Kafka bootstrap/auth | `backend_dependencies.kafka_*` |
-| Evidence bucket/KMS | `backend_dependencies.object_bucket`, `kms_key` |
-| ClickHouse HTTP endpoint / secret | `backend_dependencies.clickhouse_url`, `application_secret_refs["clickhouse"]` |
-| Policy endpoint | `backend_dependencies.policy_url` |
-| OTLP HTTP endpoint | `backend_dependencies.telemetry_url` |
-| OIDC issuer / client secret | `backend_dependencies.oidc_issuer`, `application_secret_refs["oidc-client"]` |
+| Setting                               | Source                                                                         |
+| ------------------------------------- | ------------------------------------------------------------------------------ |
+| PostgreSQL host/database/TLS mode     | `backend_dependencies.postgres_*`                                              |
+| PostgreSQL application secret         | `application_secret_refs["postgres-app"]`                                      |
+| Redis endpoint/TLS/password reference | `backend_dependencies.redis_*`                                                 |
+| Kafka bootstrap/auth                  | `backend_dependencies.kafka_*`                                                 |
+| Evidence bucket/KMS                   | `backend_dependencies.object_bucket`, `kms_key`                                |
+| ClickHouse HTTP endpoint / secret     | `backend_dependencies.clickhouse_url`, `application_secret_refs["clickhouse"]` |
+| Policy endpoint                       | `backend_dependencies.policy_url`                                              |
+| OTLP HTTP endpoint                    | `backend_dependencies.telemetry_url`                                           |
+| OIDC issuer / client secret           | `backend_dependencies.oidc_issuer`, `application_secret_refs["oidc-client"]`   |
 
 The frontend/mock API is not deployed into this cluster. ECR repositories reserve the service boundaries; migrations, real authorization, signed bundles, provider connectors and service images are the next backend implementation. Add ingress/TLS/domain configuration when deploying the control API and console. No real provider secret belongs in `config.js` or the browser bundle.
 
@@ -107,3 +107,17 @@ The LiteLLM runtime image is built from the backend source tracked in `vendor/li
 ## Consumers introduced by the feature workflows
 
 Discovery imports/risk, price versions, usage imports, invoice adjustments, control mappings and bundle acknowledgements will share the existing PostgreSQL/outbox dependency. Scheduled assurance and provenance checks will consume the existing Kafka/worker boundary. Content holds/purges need the existing S3 versioning/retention and KMS boundary with transactional custody metadata. No new managed service is required by the current dummy-backend implementation; these application workers are not yet deployed by Terraform. Preserve ledger/receipt records when implementing content retention.
+
+# Company provisioning
+
+Company settings are managed through the application. The optional AWS `company_secret_slots` input creates encrypted, empty secret slots and separate workload roles:
+
+```hcl
+company_secret_slots = {
+  acme = ["oidc-client", "provider-azure", "siem-webhook"]
+}
+```
+
+`company_secret_arns` returns references for configuration. `company_workload_roles` gives the role ARN and exact Kubernetes service-account binding. Populate secret values outside Terraform and create/bind the workload service accounts when deploying the backend. No secret values enter Terraform through this input. The default empty map provisions no company slots or roles.
+
+`database/001_company_control.sql` defines the production company-control schema and tenant isolation policies. It is not applied by Terraform or used by the current dummy backend. See the [company administration guide](../docs/company-administration.md) for authenticated membership, transactional storage and rollout requirements.
