@@ -104,11 +104,11 @@ References: [Terraform validation](https://developer.hashicorp.com/terraform/cli
 
 The LiteLLM runtime image is built from the backend source tracked in `vendor/litellm`, using `integrations/litellm/Dockerfile`. Publish that image and supply its digest as `litellm_image` before enabling the optional service. Terraform does not silently select an upstream executable image.
 
-## Consumers introduced by the feature workflows
+## Application dependencies
 
 Discovery imports/risk, price versions, usage imports, invoice adjustments, control mappings and bundle acknowledgements will share the existing PostgreSQL/outbox dependency. Scheduled assurance and provenance checks will consume the existing Kafka/worker boundary. Content holds/purges need the existing S3 versioning/retention and KMS boundary with transactional custody metadata. No new managed service is required by the current dummy-backend implementation; these application workers are not yet deployed by Terraform. Preserve ledger/receipt records when implementing content retention.
 
-# Company provisioning
+## Company provisioning
 
 Company settings are managed through the application. The optional AWS `company_secret_slots` input creates encrypted, empty secret slots and separate workload roles:
 

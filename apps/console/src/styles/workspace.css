@@ -1,4 +1,4 @@
-/* Shared workspace rhythm, accessible controls, and the policy/demo labs. */
+/* Workspace spacing, focus states and demo/test layouts. Loaded last. */
 .app-shell .page-head {
   gap: 16px;
   margin-bottom: 18px;

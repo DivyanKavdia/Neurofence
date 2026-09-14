@@ -4,7 +4,7 @@ These workflows run in the browser demo and local dummy HTTP API. They use the e
 
 ## Build a repeatable company demo
 
-1. Select **Company admin → Demo studio → Scenarios**.
+1. Select **Preview as → Company admin**, then **Demo studio → Scenarios**.
 2. Choose the Financial services or Software company dataset, a seed, and 0–40 synthetic requests.
 3. Choose Healthy gateway, Provider outage, Exhausted budget, Blocked instruction, or Expired tool approval.
 4. Confirm synthetic data and choose **Create demo environment**. The console switches to a new `Demo-*` environment within the current company.
@@ -46,12 +46,10 @@ The format is `neurofence-demo`, schema 1, with a SHA-256 digest of recursively 
 | `packages/contracts/src/policy-lab.ts`, `demo.ts`               | Suite, comparison, scenario and snapshot contracts                 |
 | `packages/demo-backend/src/workflows/policy-lab.ts`             | Validation, owner scope, versions and comparisons                  |
 | `packages/demo-backend/src/workflows/demo.ts`, `demo-backup.ts` | Scenario creation/reset, snapshots and isolated restore            |
-| `apps/console/src/features/guardrails/PolicyLab.tsx`            | Suite editor, imports, comparisons and history                     |
+| `apps/console/src/features/guardrails/testing/`                 | Suite editor, imports, comparisons and history                     |
 | `apps/console/src/features/demo/DemoStudio.tsx`                 | Scenario setup, execution and snapshots                            |
 | `apps/console/src/styles/workspace.css`                         | Shared spacing, readable controls, mobile layouts and focus styles |
 
 Browser writes use an origin-wide Web Lock when supported. A storage-event notice prompts other tabs to refresh; versions reject stale edits. Browsers without Web Locks retain a per-instance queue and need a single editing tab. The file-backed API requires one server process.
 
 `tests/api/labs.test.cjs` covers isolation, comparison behavior, integrity failures, reset and live-provider boundaries. `tests/e2e/labs.cjs` covers the full browser flow, downloads, tampered imports, two-tab conflicts, focus return and mobile layouts. Existing suites check the other product flows. These checks support the accessibility target; they are not a WCAG certification.
-
-This release implements the first three agreed priorities. FinOps scenario planning, PDF/SBOM parsing, streaming/cache simulations and expanded incident playbooks remain follow-up work.

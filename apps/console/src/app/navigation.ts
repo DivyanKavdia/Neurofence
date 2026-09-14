@@ -1,6 +1,7 @@
 export const navigation = [
   {
     id: "company",
+    description: "Manage people, defaults and access across your company.",
     label: "Company administration",
     icon: "people",
     module: "M9",
@@ -15,6 +16,7 @@ export const navigation = [
   },
   {
     id: "demo",
+    description: "Create repeatable scenarios and save your demo work.",
     label: "Demo studio",
     icon: "flask",
     module: "M9",
@@ -22,6 +24,7 @@ export const navigation = [
   },
   {
     id: "overview",
+    description: "Your AI estate, decisions and priorities at a glance.",
     label: "Command center",
     icon: "grid",
     module: "M1",
@@ -29,6 +32,8 @@ export const navigation = [
   },
   {
     id: "inventory",
+    description:
+      "Understand ownership, dependencies and risk across your AI estate.",
     label: "AI inventory",
     icon: "layers",
     module: "M1",
@@ -36,6 +41,7 @@ export const navigation = [
   },
   {
     id: "workforce",
+    description: "Review workforce AI activity and protection policies.",
     label: "Workforce AI",
     icon: "people",
     module: "M2",
@@ -43,6 +49,7 @@ export const navigation = [
   },
   {
     id: "gateway",
+    description: "Connect applications to governed model access.",
     label: "AI gateway",
     icon: "route",
     module: "M4",
@@ -58,6 +65,7 @@ export const navigation = [
   },
   {
     id: "guardrails",
+    description: "Build, inspect and test the controls around AI interactions.",
     label: "Guardrails",
     icon: "shield",
     module: "M3",
@@ -65,6 +73,7 @@ export const navigation = [
   },
   {
     id: "agents",
+    description: "Control agent authority, tools and delegated workflows.",
     label: "Agents & MCP",
     icon: "bot",
     module: "M5",
@@ -79,6 +88,7 @@ export const navigation = [
   },
   {
     id: "budgets",
+    description: "Track usage, allocate costs and manage budget controls.",
     label: "FinOps",
     icon: "wallet",
     module: "M6",
@@ -92,6 +102,7 @@ export const navigation = [
   },
   {
     id: "incidents",
+    description: "Investigate events and coordinate a response.",
     label: "Incidents",
     icon: "alert",
     module: "M9",
@@ -99,6 +110,7 @@ export const navigation = [
   },
   {
     id: "assurance",
+    description: "Test controls and track remediation evidence.",
     label: "Assurance",
     icon: "flask",
     module: "M7",
@@ -106,6 +118,7 @@ export const navigation = [
   },
   {
     id: "governance",
+    description: "Review changes, manage evidence and verify distribution.",
     label: "Governance",
     icon: "settings",
     module: "M9",
@@ -123,3 +136,5 @@ export const navigation = [
     ],
   },
 ];
+
+export type NavigationItem = (typeof navigation)[number];

@@ -21,7 +21,7 @@ async function publishConsole(result) {
   }
 }
 
-/** Output names stay stable for local scripts and integration tests. */
+/** Hash browser assets for caching; keep local API bundle paths stable. */
 export async function build({ watch = false } = {}) {
   await mkdir(consoleOutput, { recursive: true });
   await mkdir(".runtime", { recursive: true });
