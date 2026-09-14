@@ -30,12 +30,14 @@ export class MockBackend implements Transport {
     const session = { ...this.session };
     if (this.latency)
       await new Promise((resolve) => setTimeout(resolve, this.latency));
-    const work = this.queue.then(() =>
+    const transaction = () =>
       dispatch(request, session, {
         store: this.store,
         receipts: this.receipts,
         providerConnector: this.providerConnector,
-      }),
+      });
+    const work = this.queue.then(() =>
+      this.store.exclusive ? this.store.exclusive(transaction) : transaction(),
     );
     this.queue = work.then(
       () => undefined,

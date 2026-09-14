@@ -14,6 +14,13 @@ export const navigation = [
     ],
   },
   {
+    id: "demo",
+    label: "Demo studio",
+    icon: "flask",
+    module: "M9",
+    tabs: ["Scenarios", "Backup & restore"],
+  },
+  {
     id: "overview",
     label: "Command center",
     icon: "grid",
@@ -54,7 +61,7 @@ export const navigation = [
     label: "Guardrails",
     icon: "shield",
     module: "M3",
-    tabs: ["Overview", "Policy builder", "Simulator", "Detectors"],
+    tabs: ["Overview", "Policy builder", "Simulator", "Test lab", "Detectors"],
   },
   {
     id: "agents",

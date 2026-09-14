@@ -70,3 +70,7 @@ The browser uses a scoped aggregate read for the finite demo dataset; the BFF al
 ## Company administration extension
 
 Six company administration views add onboarding, company overview, memberships/teams, versioned configuration and effective overrides, delegated permissions/identity, history/audit, and provisioning requests. These complement the original source screens. See [company administration](company-administration.md) for the complete flow and production boundaries.
+
+## Repeatable evaluation extension
+
+**Demo studio** adds Scenarios and Backup & restore views for managed `Demo-*` environments. **Guardrails → Test lab** adds saved inputs, expected decisions, active/draft comparisons, history and exports. The shared interface uses tighter spacing, contextual descriptions, clearer controls, focus restoration and cross-tab change notices. See [demo and policy testing](demo-and-policy-testing.md).

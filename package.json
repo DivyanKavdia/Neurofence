@@ -1,6 +1,6 @@
 {
   "name": "neurofence-prototype",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "description": "NeuralFence React console, mock BFF and Terraform backend dependency foundation",
   "scripts": {
@@ -8,9 +8,9 @@
     "typecheck": "tsc --noEmit",
     "dev": "node scripts/dev.mjs",
     "mock": "node scripts/build.mjs && node .runtime/mock-server.cjs",
-    "test": "npm run typecheck && npm run build && npm run test:api && node tests/e2e/console.cjs && node tests/e2e/workflows.cjs && node tests/e2e/company.cjs",
-    "test:browser": "node tests/e2e/console.cjs && node tests/e2e/workflows.cjs && node tests/e2e/company.cjs",
-    "test:api": "node --test tests/api/backend.test.cjs tests/api/http.test.cjs tests/api/litellm.test.cjs tests/api/workflows.test.cjs tests/api/company.test.cjs",
+    "test": "npm run typecheck && npm run build && npm run test:api && node tests/e2e/console.cjs && node tests/e2e/workflows.cjs && node tests/e2e/company.cjs && node tests/e2e/labs.cjs",
+    "test:browser": "node tests/e2e/console.cjs && node tests/e2e/workflows.cjs && node tests/e2e/company.cjs && node tests/e2e/labs.cjs",
+    "test:api": "node --test tests/api/backend.test.cjs tests/api/http.test.cjs tests/api/litellm.test.cjs tests/api/workflows.test.cjs tests/api/company.test.cjs tests/api/labs.test.cjs",
     "test:litellm": "node tests/integration/litellm-stack.cjs",
     "litellm:source": "node scripts/litellm-source.mjs",
     "litellm:import": "node scripts/litellm-source.mjs import",

@@ -21,6 +21,8 @@ Open `http://127.0.0.1:8000`. Source changes rebuild automatically; refresh the 
 
 ## Explore the working flows
 
+For a repeatable evaluation, open **Demo studio** as Company admin. Create an isolated company demo with a dataset, seed and failure scenario; run the request, reset it, or save and restore a snapshot. **Guardrails → Test lab** compares saved synthetic inputs against active and draft policies, with expected outcomes, new failures and run history. See the [demo and policy testing guide](docs/demo-and-policy-testing.md).
+
 Start with **Company administration** to configure company branding, modules, identity settings, members, teams and application controls. Use **Preview as → Neurofence operator → Onboard company** to create a company, then complete its setup as Company admin. Configuration changes follow draft, validation, independent review and publication. The [company administration guide](docs/company-administration.md) walks through onboarding, inheritance and the production handoff.
 
 Use the module tabs for discovery imports and explainable risk, agent delegation and result inspection, price/usage imports and invoice reconciliation, evidence holds and control mappings, policy bundle acknowledgements, and scheduled assurance with provenance review. The help menu explains each area; the action queue collects pending approvals, incidents and jobs.
@@ -58,6 +60,7 @@ A single root `package.json` installs and builds the first-party TypeScript code
 - [Development](docs/development.md): commands, common changes, testing and troubleshooting.
 - [Architecture](docs/architecture.md): ownership, request flow and production boundaries.
 - [Company administration](docs/company-administration.md): onboarding, members, company defaults, overrides and reviewed publication.
+- [Demo and policy testing](docs/demo-and-policy-testing.md): repeatable scenarios, snapshots, saved test suites and comparisons.
 - [API contract](docs/api.md) and [OpenAPI](docs/openapi.json): envelopes, actions, state transitions and backend replacement.
 - [Product scope](docs/product-scope.md): all 25 primary screens and nine workflows.
 - [LiteLLM](integrations/litellm/README.md): fixture setup, live configuration and upstream updates.

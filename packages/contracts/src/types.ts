@@ -1,4 +1,6 @@
 import type { CompanyWorkspace } from "./company";
+import type { PolicyLabState } from "./policy-lab";
+import type { DemoWorkspace } from "./demo";
 
 export type Json =
   | string
@@ -78,6 +80,8 @@ export type State = {
   data: Record<Collection, Row[]>;
   settings: Row;
   company?: CompanyWorkspace;
+  policyLab?: PolicyLabState;
+  demoWorkspace?: DemoWorkspace;
   gatewayReceipts?: Record<
     string,
     { payloadHash: string; trace: string; status: "pending" | "complete" }
@@ -182,6 +186,7 @@ export const moduleMap: Record<string, string> = {
   assurance: "M7",
   governance: "M9",
   company: "M9",
+  demo: "M9",
 };
 
 export const capabilities: Record<string, Role[]> = {

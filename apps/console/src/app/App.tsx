@@ -8,6 +8,7 @@ import React, {
 import {
   ApiError,
   arr,
+  can,
   initialSession,
   Json,
   Request,
@@ -67,6 +68,7 @@ export function App() {
     [busy, setBusy] = useState(false),
     [menu, setMenu] = useState(false),
     [signedOut, setSignedOut] = useState(false),
+    [updatedElsewhere, setUpdatedElsewhere] = useState(false),
     [period, setPeriod] = useState(30);
   const latest = useRef(0),
     mutations = useRef(0);
@@ -85,6 +87,7 @@ export function App() {
       if (call === latest.current) {
         setState(result.data);
         setError(null);
+        setUpdatedElsewhere(false);
       }
     } catch (e) {
       if (call === latest.current)
@@ -97,6 +100,18 @@ export function App() {
     api.setSession(session);
     void refresh();
   }, [session, refresh]);
+  useEffect(() => {
+    const listener = (event: StorageEvent) => {
+      if (
+        event.key === "neurofence.companies.v1" ||
+        event.key ===
+          `neuralfence.console.v2.${session.tenant}:${session.environment}`
+      )
+        setUpdatedElsewhere(true);
+    };
+    window.addEventListener("storage", listener);
+    return () => window.removeEventListener("storage", listener);
+  }, [session.tenant, session.environment]);
   const setSession = useCallback((next: Session) => {
     next = {
       tenant: next.tenant,
@@ -232,8 +247,13 @@ export function App() {
     visible = navigation.filter((n) =>
       session.role === "Neurofence operator"
         ? n.id === "company"
-        : modules.includes(n.module) ||
-          (n.id === "assurance" && modules.includes("M8")),
+        : (modules.includes(n.module) ||
+            (n.id === "assurance" && modules.includes("M8"))) &&
+          (n.id !== "demo" ||
+            can(
+              { ...session, permissions: state?.company?.permissions },
+              "company",
+            )),
     ),
     nav = visible.find((n) => n.id === route.page),
     tabs =
@@ -430,7 +450,7 @@ export function App() {
               </div>
               <div className="sidebar-footer">
                 <span className="dot" />
-                DEMO WORKSPACE <span>v0.6</span>
+                DEMO WORKSPACE <span>v0.7</span>
               </div>
             </div>
           </aside>
@@ -491,19 +511,28 @@ export function App() {
               >
                 <span aria-hidden="true">?</span>
               </button>
-              <label className="period-control">
-                <span className="sr-only">Time range</span>
-                <select
-                  value={period}
-                  aria-label="Time range"
-                  onChange={(e) => setPeriod(Number(e.target.value))}
-                >
-                  <option value={1}>24 hours</option>
-                  <option value={7}>7 days</option>
-                  <option value={30}>30 days</option>
-                  <option value={365}>All sample activity</option>
-                </select>
-              </label>
+              {[
+                "overview",
+                "gateway",
+                "guardrails",
+                "agents",
+                "incidents",
+              ].includes(route.page) &&
+                (route.page !== "guardrails" || route.tab === "Overview") && (
+                  <label className="period-control">
+                    <span className="sr-only">Time range</span>
+                    <select
+                      value={period}
+                      aria-label="Time range"
+                      onChange={(e) => setPeriod(Number(e.target.value))}
+                    >
+                      <option value={1}>24 hours</option>
+                      <option value={7}>7 days</option>
+                      <option value={30}>30 days</option>
+                      <option value={365}>All sample activity</option>
+                    </select>
+                  </label>
+                )}
               <label className="role-control">
                 <span className="role-label">Preview as</span>
                 <select
@@ -570,6 +599,14 @@ export function App() {
             </div>
           </header>
           <main id="main" tabIndex={-1} aria-busy={busy}>
+            {updatedElsewhere && (
+              <div className="workspace-update" role="status">
+                <span>This workspace changed in another tab.</span>
+                <Button onClick={() => void refresh()}>
+                  Refresh workspace
+                </Button>
+              </div>
+            )}
             {error && (
               <div className="api-error" role="alert">
                 <div>
@@ -585,9 +622,30 @@ export function App() {
             <PageHead
               title={nav?.label || "Workspace"}
               sub={
-                route.page === "overview"
-                  ? "Your AI estate, decisions and priorities at a glance."
-                  : `${session.environment} workspace · ${str(state.settings.deployment)} · ${session.region}`
+                (
+                  {
+                    overview:
+                      "Your AI estate, decisions and priorities at a glance.",
+                    company:
+                      "Manage people, defaults and access across your company.",
+                    demo: "Create repeatable scenarios and save your demo work.",
+                    guardrails:
+                      "Build, inspect and test the controls around AI interactions.",
+                    gateway: "Connect applications to governed model access.",
+                    inventory:
+                      "Understand ownership, dependencies and risk across your AI estate.",
+                    agents:
+                      "Control agent authority, tools and delegated workflows.",
+                    workforce:
+                      "Review workforce AI activity and protection policies.",
+                    budgets:
+                      "Track usage, allocate costs and manage budget controls.",
+                    incidents: "Investigate events and coordinate a response.",
+                    assurance: "Test controls and track remediation evidence.",
+                    governance:
+                      "Review changes, manage evidence and verify distribution.",
+                  } as Record<string, string>
+                )[route.page] || `${session.environment} workspace`
               }
               actions={
                 <Button onClick={() => setModal(<SessionDialog />)}>
@@ -645,7 +703,9 @@ export function App() {
             </TimeScope>
             <footer className="page-footer">
               <span>
-                Simulated backend · No live provider or tool execution
+                {state.settings.modelRuntime === "mock"
+                  ? "Demo backend · Sample model and tool execution"
+                  : "LiteLLM model execution · Demo control plane"}
               </span>
               <span>
                 {str(state.settings.name)} · {session.environment}

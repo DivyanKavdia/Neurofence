@@ -34,6 +34,10 @@ export async function handleRuntime(ctx: RequestContext) {
   if (resource === "runtime" && method === "POST") {
     permission("run");
     requireValue(
+      !providerConnector || !state.demoWorkspace?.managed,
+      "Demo studio environments never execute against live providers. Use the dummy backend for this workspace.",
+    );
+    requireValue(
       ["model", "tool"].includes(id),
       "Choose the model or tool runtime.",
     );
