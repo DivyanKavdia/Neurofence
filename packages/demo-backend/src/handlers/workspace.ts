@@ -3,6 +3,8 @@ import { RequestContext } from "../context";
 import { createState } from "../fixtures/seed";
 import { moduleFor, ownRoles } from "../resources/schema";
 import { mask, requireValue } from "../shared/values";
+import { resolveCompanyConfig } from "@neurofence/contracts/company";
+import { companySummary } from "../company/directory";
 
 export async function handleWorkspace(ctx: RequestContext) {
   const {
@@ -23,6 +25,37 @@ export async function handleWorkspace(ctx: RequestContext) {
   } = ctx;
   if (resource === "workspace" && method === "GET") {
     const scoped = structuredClone(state);
+    const { company, directory } = ctx;
+    scoped.company = {
+      summary: companySummary(company),
+      effective: resolveCompanyConfig(company, session.environment),
+      permissions: session.permissions || [],
+      identities: company.members
+        .filter((m) => m.status === "Active")
+        .map((m) => ({ id: m.id, name: m.name, roles: m.roles })),
+      companies: directory.companies
+        .filter(
+          (c) =>
+            session.role === "Neurofence operator" ||
+            c.members.some(
+              (m) =>
+                m.status === "Active" &&
+                m.roles.includes(session.role) &&
+                (session.subject
+                  ? m.subject === session.subject
+                  : m.name === session.user),
+            ),
+        )
+        .map(companySummary),
+      ...([
+        "Company admin",
+        "Security admin",
+        "Governance owner",
+        "Auditor",
+      ].includes(session.role)
+        ? { administration: structuredClone(company) }
+        : {}),
+    };
     delete scoped.gatewayReceipts;
     scoped.settings.modelRuntime = providerConnector?.mode || "mock";
     for (const c of collections) {
@@ -77,21 +110,10 @@ export async function handleWorkspace(ctx: RequestContext) {
   if (resource === "settings" && method === "PATCH") {
     permission("settings");
     checkVersion(state.settings);
-    const allowed = [
-      "name",
-      "retention",
-      "days",
-      "deployment",
-      "residency",
-      "fourEyes",
-      "rawContent",
-      "modules",
-      "density",
-      "controlPlane",
-    ];
+    const allowed = ["deployment", "controlPlane"];
     requireValue(
       Object.keys(body).every((k) => allowed.includes(k)),
-      "Unknown setting.",
+      "Company settings are managed through Company administration drafts. Only demo deployment and control-plane scenarios can be changed here.",
     );
     if (body.days !== undefined)
       requireValue(

@@ -1,17 +1,12 @@
+const { names, publishCompany } = require("../helpers/company.cjs");
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { MockBackend, MemoryStore } = require("../../.runtime/backend.cjs");
 function fixture() {
   const store = new MemoryStore(),
     api = new MockBackend(store, 0);
-  const role = (
-    role,
-    user = role === "Security admin"
-      ? "Mira Kapoor"
-      : role === "Developer"
-        ? "Priya Shah"
-        : "Divyan Kavdia",
-  ) => api.setSession({ ...api.session, role, user });
+  const role = (role, user = names[role]) =>
+    api.setSession({ ...api.session, role, user });
   const read = async () =>
     (await api.request({ path: "/api/v1/workspace" })).data;
   const send = async (
@@ -114,7 +109,7 @@ test("Discovery import is atomic, scoped, repeatable and preserves reviewed owne
     )[0].change,
     "Unchanged",
   );
-  f.api.setSession({ ...f.api.session, tenant: "other-tenant" });
+  f.api.setSession({ ...f.api.session, tenant: "northstar" });
   assert.equal((await f.read()).data.assets.length, 0);
 });
 
@@ -372,9 +367,12 @@ test("Evidence holds survive retention changes; reviewed purge preserves ledger 
   const f = fixture();
   await f.read();
   f.role("Security admin");
+  await publishCompany(f.api, {
+    rawContent: true,
+    retention: "Full content",
+    days: 1,
+  });
   f.change((s) => {
-    s.settings.rawContent = true;
-    s.settings.days = 1;
     for (const t of s.data.traces.slice(0, 2)) {
       t.ts = Date.now() - 3 * 86400000;
       t.content = { prompt: "Retained sample" };
@@ -406,12 +404,8 @@ test("Evidence holds survive retention changes; reviewed purge preserves ledger 
   );
   f.role("Platform admin");
   state = await f.read();
-  await f.send(
-    "/api/v1/settings",
-    { rawContent: false },
-    state.settings,
-    "PATCH",
-  );
+  await publishCompany(f.api, { rawContent: false });
+  await f.read();
   assert.ok(
     f.store.read("acme:Development").data.traces.find((t) => t.id === held.id)
       .content,

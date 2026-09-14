@@ -21,6 +21,7 @@ import { refreshRisk } from "./workflows/inventory";
 import { handleRuntime } from "./handlers/runtime";
 import { handleTraceActions } from "./handlers/traces";
 import { handleWorkspace } from "./handlers/workspace";
+import { handleCompany } from "./company/handler";
 import { updateResource } from "./resources/actions";
 import { createResource } from "./resources/create";
 import { deleteResource } from "./resources/delete";
@@ -37,6 +38,8 @@ export async function dispatch(
   const ctx = createRequestContext(request, session, services);
   const replay = replayReceipt(ctx);
   if (replay) return replay;
+  const company = handleCompany(ctx);
+  if (company) return company;
   completeJobs(ctx.state, ctx.audit);
   refreshRisk(ctx.state);
   const operation = await handleOperations(ctx);
@@ -52,6 +55,12 @@ export async function dispatch(
       "This API endpoint is unavailable.",
     );
   const collection = ctx.resource as Collection;
+  if (collection === "members" && ctx.method !== "GET")
+    throw new ApiError(
+      409,
+      "COMPANY_MEMBERS_MANAGED",
+      "Manage memberships in Company administration. Environment-level member writes are disabled.",
+    );
   if (
     moduleFor[collection] &&
     !arr(ctx.state.settings.modules).includes(moduleFor[collection]!)

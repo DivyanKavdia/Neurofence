@@ -74,6 +74,28 @@ test("HTTP adapter serves the console and persists isolated, versioned BFF mutat
       "X-Demo-Tenant": "north",
       "X-Demo-Environment": "west-Development",
     };
+    for (const [slug, environments] of [
+      ["north-west", ["Development"]],
+      ["north", ["west-Development"]],
+    ]) {
+      const response = await fetch(base + "/api/v1/companies", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Demo-Role": "Neurofence operator",
+          "X-Demo-User": "Neurofence operator",
+          "Idempotency-Key": crypto.randomUUID(),
+        },
+        body: JSON.stringify({
+          slug,
+          name: slug,
+          ownerName: "Divyan Kavdia",
+          ownerEmail: "owner@example.test",
+          environments,
+        }),
+      });
+      assert.equal(response.status, 200);
+    }
     const firstState = (await get("/api/v1/workspace", firstScope)).data;
     const rename = await fetch(base + "/api/v1/settings", {
       method: "PATCH",
@@ -83,16 +105,16 @@ test("HTTP adapter serves the console and persists isolated, versioned BFF mutat
         "If-Match": String(firstState.settings.version),
         "Idempotency-Key": "isolated-setting",
       },
-      body: JSON.stringify({ name: "First isolated workspace" }),
+      body: JSON.stringify({ deployment: "Private cloud" }),
     });
     assert.equal(rename.status, 200);
     assert.equal(
-      (await get("/api/v1/workspace", firstScope)).data.settings.name,
-      "First isolated workspace",
+      (await get("/api/v1/workspace", firstScope)).data.settings.deployment,
+      "Private cloud",
     );
     assert.notEqual(
-      (await get("/api/v1/workspace", secondScope)).data.settings.name,
-      "First isolated workspace",
+      (await get("/api/v1/workspace", secondScope)).data.settings.deployment,
+      "Private cloud",
     );
     assert.equal(
       (

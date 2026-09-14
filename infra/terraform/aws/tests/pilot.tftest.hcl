@@ -9,6 +9,24 @@ mock_provider "aws" {
 mock_provider "random" {}
 mock_provider "tls" {}
 
+run "company_secret_boundaries" {
+  command = plan
+  variables {
+    company_secret_slots = {
+      acme      = ["oidc-client", "provider-azure"]
+      northstar = ["oidc-client"]
+    }
+  }
+  assert {
+    condition     = length(aws_secretsmanager_secret.company) == 3 && length(aws_iam_role.company_runtime) == 2
+    error_message = "Company provisioning must create distinct secret slots and workload identities."
+  }
+  assert {
+    condition     = aws_secretsmanager_secret.company["acme/oidc-client"].name != aws_secretsmanager_secret.company["northstar/oidc-client"].name
+    error_message = "Companies must never share an identity secret slot."
+  }
+}
+
 variables {
   administrator_role_arn = "arn:aws:iam::123456789012:role/operator"
 }

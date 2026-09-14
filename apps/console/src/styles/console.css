@@ -914,5 +914,195 @@ button:focus-visible {
 }
 
 @media (max-width: 760px) {
-  .top-actions .workspace-shortcut { display: none; }
+  .top-actions .workspace-shortcut {
+    display: none;
+  }
+}
+/* Company administration uses the same responsive controls as product workflows. */
+.company-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(125deg, var(--paper), #e5f4ed);
+}
+.company-hero h2 {
+  font-size: clamp(24px, 3vw, 34px);
+  margin: 6px 0;
+}
+.company-hero p {
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+.company-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.company-grid > .panel {
+  margin: 0;
+  min-width: 0;
+}
+.company-values {
+  margin: 0;
+}
+.company-values > div {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(0, 1.4fr);
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.company-values dt {
+  color: var(--muted);
+}
+.company-values dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+.company-lock {
+  display: block;
+  font-size: 11px;
+  color: var(--green);
+}
+.company-diff {
+  margin: 16px 0;
+  max-height: 300px;
+  overflow: auto;
+}
+.company-diff > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.company-diff span {
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.company-override {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.company-override > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.company-checklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 20px;
+}
+.company-checklist > button {
+  border: 1px solid var(--line);
+  background: var(--paper);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+}
+.company-checklist small {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.company-checklist > button > span:nth-child(2) {
+  flex: 1;
+}
+.company-check {
+  font-size: 22px;
+  color: var(--muted);
+}
+.company-check.done {
+  color: var(--green);
+}
+.company-panel-actions,
+.company-logo-editor {
+  margin-top: 20px;
+}
+.company-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.company-logo-editor img {
+  object-fit: contain;
+}
+.company-steps {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  gap: 12px;
+  margin: 24px 0;
+}
+.company-steps li {
+  flex: 1;
+  font-size: 12px;
+  color: var(--muted);
+}
+.company-steps li span {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 28px;
+  background: var(--canvas);
+  margin-bottom: 6px;
+}
+.company-steps [aria-current="step"] {
+  font-weight: 800;
+  color: var(--ink);
+}
+.company-steps [aria-current="step"] span {
+  background: var(--company-brand, var(--blue));
+  color: var(--company-on-brand, #fff);
+}
+.button.primary {
+  background: var(--company-brand, var(--blue));
+  border-color: var(--company-brand, var(--blue));
+  color: var(--company-on-brand, #fff);
+}
+.button.primary:hover {
+  filter: brightness(0.93);
+}
+@media (max-width: 900px) {
+  .company-grid,
+  .company-checklist {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .company-hero {
+    padding: 20px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .company-values > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .company-override {
+    flex-wrap: wrap;
+  }
+  .company-steps {
+    gap: 6px;
+  }
 }

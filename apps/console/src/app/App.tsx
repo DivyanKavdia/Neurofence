@@ -12,7 +12,6 @@ import {
   Json,
   Request,
   Role,
-  roles,
   Row,
   Session,
   State,
@@ -36,7 +35,30 @@ import { ActionQueue, WorkspaceHelp } from "./WorkspaceAssistance";
 import { TimeScope } from "./TimeScope";
 
 export function App() {
-  const [session, setSessionState] = useState<Session>(initialSession),
+  const [session, setSessionState] = useState<Session>(() => {
+      try {
+        const saved = JSON.parse(
+          sessionStorage.getItem("neurofence.demo.session") || "null",
+        );
+        if (
+          saved &&
+          typeof saved.tenant === "string" &&
+          typeof saved.environment === "string" &&
+          typeof saved.user === "string" &&
+          saved.role in users
+        )
+          return {
+            tenant: saved.tenant,
+            environment: saved.environment,
+            region: saved.region || "India",
+            user: saved.user,
+            role: saved.role,
+          };
+      } catch {
+        /* Use the initial company when no saved demo session exists. */
+      }
+      return initialSession;
+    }),
     [state, setState] = useState<State | null>(null),
     [route, setRoute] = useState(readRoute),
     [modal, setModal] = useState<ReactNode>(null),
@@ -76,6 +98,18 @@ export function App() {
     void refresh();
   }, [session, refresh]);
   const setSession = useCallback((next: Session) => {
+    next = {
+      tenant: next.tenant,
+      environment: next.environment,
+      role: next.role,
+      user: next.user,
+      region: next.region,
+    };
+    try {
+      sessionStorage.setItem("neurofence.demo.session", JSON.stringify(next));
+    } catch {
+      /* Session persistence is optional. */
+    }
     latest.current++;
     api.setSession(next);
     setState(null);
@@ -83,6 +117,33 @@ export function App() {
     setModal(null);
     setMenu(false);
   }, []);
+  useEffect(() => {
+    if (!state) return;
+    document.documentElement.style.setProperty(
+      "--company-brand",
+      str(state.settings.brandColor) || "#193b2a",
+    );
+    const rgb = (str(state.settings.brandColor) || "#193b2a")
+      .slice(1)
+      .match(/.{2}/g)!
+      .map((c) => {
+        const s = parseInt(c, 16) / 255;
+        return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+      });
+    document.documentElement.style.setProperty(
+      "--company-on-brand",
+      rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722 > 0.179
+        ? "#101c19"
+        : "#fff",
+    );
+    document.documentElement.dataset.companyTimezone =
+      str(state.settings.timezone) || "Asia/Kolkata";
+    if (!location.hash) go(str(state.settings.landingPage) || "overview");
+  }, [
+    state?.settings.brandColor,
+    state?.settings.timezone,
+    state?.settings.landingPage,
+  ]);
   useEffect(() => {
     if (
       state?.data.jobs.some((j) => j.status === "Running") ||
@@ -168,20 +229,25 @@ export function App() {
     return () => document.removeEventListener("keydown", handler);
   }, []);
   const modules = arr<string>(state?.settings.modules),
-    visible = navigation.filter(
-      (n) =>
-        modules.includes(n.module) ||
-        (n.id === "assurance" && modules.includes("M8")),
+    visible = navigation.filter((n) =>
+      session.role === "Neurofence operator"
+        ? n.id === "company"
+        : modules.includes(n.module) ||
+          (n.id === "assurance" && modules.includes("M8")),
     ),
     nav = visible.find((n) => n.id === route.page),
     tabs =
       nav?.tabs.filter(
         (t) =>
-          nav.id !== "assurance" ||
-          modules.includes(t === "Supply chain" ? "M8" : "M7"),
+          (nav.id !== "company" ||
+            (session.role === "Neurofence operator"
+              ? t === "Overview"
+              : !!state?.company?.administration || t === "Overview")) &&
+          (nav.id !== "assurance" ||
+            modules.includes(t === "Supply chain" ? "M8" : "M7")),
       ) || [];
   useEffect(() => {
-    if (state && !nav) go("governance", "Settings");
+    if (state && !nav) go("company", "Overview");
     else if (state && tabs.length && !tabs.includes(route.tab))
       go(route.page, tabs[0]);
   }, [state, route.page, route.tab]);
@@ -200,6 +266,28 @@ export function App() {
             <button className="button" onClick={() => void refresh()}>
               Retry connection
             </button>
+            <button
+              className="button"
+              onClick={() => {
+                setSession(initialSession);
+                go("company", "Overview");
+              }}
+            >
+              Return to initial demo company
+            </button>
+            <button
+              className="button"
+              onClick={() => {
+                setSession({
+                  ...initialSession,
+                  role: "Neurofence operator",
+                  user: users["Neurofence operator"],
+                });
+                go("company", "Overview");
+              }}
+            >
+              Open operator demo
+            </button>
           </>
         ) : (
           <p role="status">Loading configuration and sample activity.</p>
@@ -208,7 +296,7 @@ export function App() {
     );
   const context = {
     state,
-    session,
+    session: { ...session, permissions: state.company?.permissions },
     page: route.page,
     tab: route.tab,
     busy,
@@ -270,11 +358,19 @@ export function App() {
               onClick={() => setModal(<SessionDialog />)}
             >
               <span className="avatar">
-                {str(state.settings.name)
-                  .split(" ")
-                  .map((s) => s[0])
-                  .slice(0, 2)
-                  .join("")}
+                {state.settings.logo ? (
+                  <img
+                    className="company-logo"
+                    src={str(state.settings.logo)}
+                    alt=""
+                  />
+                ) : (
+                  str(state.settings.name)
+                    .split(" ")
+                    .map((s) => s[0])
+                    .slice(0, 2)
+                    .join("")
+                )}
               </span>
               <span>
                 <strong>{str(state.settings.name)}</strong>
@@ -285,15 +381,20 @@ export function App() {
               </span>
             </button>
             <nav>
-              {visible.map((item, i) => (
+              {visible.map((item) => (
                 <React.Fragment key={item.id}>
-                  {[0, 3, 6].includes(i) && (
+                  {["company", "overview", "gateway", "budgets"].includes(
+                    item.id,
+                  ) && (
                     <div className="nav-group-label">
-                      {i === 0
-                        ? "Workspace"
-                        : i === 3
-                          ? "AI runtime"
-                          : "Operations"}
+                      {
+                        {
+                          company: "Administration",
+                          overview: "Workspace",
+                          gateway: "AI runtime",
+                          budgets: "Operations",
+                        }[item.id]
+                      }
                     </div>
                   )}
                   <button
@@ -329,7 +430,7 @@ export function App() {
               </div>
               <div className="sidebar-footer">
                 <span className="dot" />
-                DEMO WORKSPACE <span>v0.5</span>
+                DEMO WORKSPACE <span>v0.6</span>
               </div>
             </div>
           </aside>
@@ -412,11 +513,23 @@ export function App() {
                     setSession({
                       ...session,
                       role: e.target.value as Role,
-                      user: users[e.target.value as Role],
+                      user:
+                        e.target.value === "Neurofence operator"
+                          ? users["Neurofence operator"]
+                          : state.company?.identities.find((m) =>
+                              m.roles.includes(e.target.value as Role),
+                            )?.name || users[e.target.value as Role],
                     })
                   }
                 >
-                  {roles.map((r) => (
+                  {[
+                    ...new Set([
+                      ...(state.company?.identities.flatMap((m) => m.roles) || [
+                        session.role,
+                      ]),
+                      "Neurofence operator" as Role,
+                    ]),
+                  ].map((r) => (
                     <option key={r}>{r}</option>
                   ))}
                 </select>

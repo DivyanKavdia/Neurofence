@@ -1,4 +1,10 @@
 import { ProviderConnector } from "@neurofence/contracts/provider";
+import { resolveCompanyConfig } from "@neurofence/contracts/company";
+import {
+  authorizeCompany,
+  loadDirectory,
+  resolveMembership,
+} from "./company/directory";
 import {
   ApiError,
   can,
@@ -18,7 +24,10 @@ import { Store } from "./stores/store";
 
 export interface BackendServices {
   store: Store;
-  receipts: Map<string, { payload: string; result: Result }>;
+  receipts: Map<
+    string,
+    { payload: string; result: Result; permissions: string[] }
+  >;
   providerConnector?: ProviderConnector;
 }
 export function createRequestContext(
@@ -37,28 +46,66 @@ export function createRequestContext(
   const [resource, id, action] = url.pathname
     .replace("/api/v1/", "")
     .split("/");
+  const directory = loadDirectory(services.store);
+  const company = directory.companies.find((c) => c.id === session.tenant);
+  if (!company)
+    throw new ApiError(
+      404,
+      "COMPANY_NOT_FOUND",
+      "This company is not registered. An operator must onboard it first.",
+    );
+  session = authorizeCompany(company, session);
+  if (
+    session.role === "Neurofence operator" &&
+    !["companies", "workspace", "session", "capabilities", "company"].includes(
+      resource,
+    )
+  )
+    throw new ApiError(
+      403,
+      "FORBIDDEN",
+      "Operator access is limited to company provisioning. Select a company membership to access product data.",
+    );
   const key = `${session.tenant}:${session.environment}`;
   const state = structuredClone(
     services.store.read(key) || createState(undefined, session.tenant),
   );
   // Additive migration preserves existing schema-2 browser/file workspaces.
   for (const collection of collections) state.data[collection] ||= [];
+  const effective = resolveCompanyConfig(company, session.environment);
+  Object.assign(state.settings, effective.values);
+  state.settings.companyConfigVersion = company.publishedVersion;
+  state.data.members = structuredClone(company.members).map((m) => ({
+    ...m,
+    role: m.roles.join(", "),
+  }));
+  // Membership and configuration live in the company directory, never in an API snapshot.
+  delete state.company;
   const correlationId = uid("request");
+  const requiredPermissions = new Set<string>();
   const persist = () => {
     const saved = structuredClone(state);
-    if (!saved.settings.rawContent) {
+    delete saved.company;
+    {
       for (const trace of saved.data.traces) {
+        if (
+          resolveCompanyConfig(company, session.environment, str(trace.project))
+            .values.rawContent
+        )
+          continue;
         if (trace.legalHold && trace.content) continue;
-        if (!trace.modelRuntime || trace.modelRuntime === "mock") continue;
         delete trace.content;
-        trace.preview = "Request content not retained";
-        trace.output = "Response content not retained";
+        if (trace.modelRuntime && trace.modelRuntime !== "mock") {
+          trace.preview = "Request content not retained";
+          trace.output = "Response content not retained";
+        }
         trace.contentRetained = false;
       }
     }
     services.store.write(key, saved);
   };
   const permission = (cap: string) => {
+    requiredPermissions.add(cap);
     if (!can(session, cap))
       throw new ApiError(
         403,
@@ -91,9 +138,21 @@ export function createRequestContext(
     };
   };
   const inScope = (row: Row, collection: string) => {
+    if (session.role === "Neurofence operator") return false;
     if (!ownRoles.includes(session.role)) return true;
+    const member = resolveMembership(company, session);
+    const teamProject = (project: string) =>
+      company.projectTeams.some(
+        (p) =>
+          p.environment === session.environment &&
+          p.project === project &&
+          member.teams.includes(p.team),
+      );
     if (collection === "projects" || collection === "agents")
-      return row.owner === session.user;
+      return (
+        row.owner === session.user ||
+        teamProject(collection === "projects" ? row.id : str(row.project))
+      );
     if (
       ["traces", "approvals", "incidents", "campaigns", "scans"].includes(
         collection,
@@ -106,6 +165,7 @@ export function createRequestContext(
       return (
         project?.owner === session.user ||
         agent?.owner === session.user ||
+        teamProject(str(project?.id)) ||
         row.requestedBy === session.user
       );
     }
@@ -162,13 +222,19 @@ export function createRequestContext(
   const respond = (value: unknown, write = method !== "GET") => {
     const result = done(value, write);
     if (method !== "GET")
-      services.receipts.set(receiptKey, { payload, result });
+      services.receipts.set(receiptKey, {
+        payload,
+        result,
+        permissions: [...requiredPermissions],
+      });
     return result;
   };
   return {
     request,
     session,
     services,
+    directory,
+    company,
     providerConnector,
     method,
     body,
@@ -208,6 +274,7 @@ export function replayReceipt(ctx: RequestContext): Result | undefined {
           "IDEMPOTENCY_CONFLICT",
           "This request key was used with different values.",
         );
+      for (const capability of previous.permissions) ctx.permission(capability);
       return structuredClone(previous.result);
     }
   }

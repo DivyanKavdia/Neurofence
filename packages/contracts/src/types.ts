@@ -1,5 +1,12 @@
+import type { CompanyWorkspace } from "./company";
+
 export type Json =
-  string | number | boolean | null | Json[] | { [key: string]: Json };
+  | string
+  | number
+  | boolean
+  | null
+  | Json[]
+  | { [key: string]: Json };
 
 /** Versioned JSON resources. Every mutation is validated by the mock BFF schema. */
 export type Row = {
@@ -41,6 +48,8 @@ export const collections = [
 export type Collection = (typeof collections)[number];
 
 export type Role =
+  | "Neurofence operator"
+  | "Company admin"
   | "Platform admin"
   | "Security admin"
   | "Governance owner"
@@ -57,6 +66,10 @@ export type Session = {
   region: string;
   role: Role;
   user: string;
+  /** Trusted adapters supply subject; the demo uses the selected member's name. */
+  subject?: string;
+  /** Server-derived effective permissions. Never trust these on incoming requests. */
+  permissions?: string[];
 };
 
 export type State = {
@@ -64,6 +77,7 @@ export type State = {
   revision: number;
   data: Record<Collection, Row[]>;
   settings: Row;
+  company?: CompanyWorkspace;
   gatewayReceipts?: Record<
     string,
     { payloadHash: string; trace: string; status: "pending" | "complete" }
@@ -121,6 +135,8 @@ export const round = (n: number) =>
   Math.round((n + Number.EPSILON) * 100) / 100;
 
 export const roles: Role[] = [
+  "Neurofence operator",
+  "Company admin",
   "Platform admin",
   "Security admin",
   "Governance owner",
@@ -133,6 +149,8 @@ export const roles: Role[] = [
 ];
 
 export const users: Record<Role, string> = {
+  "Neurofence operator": "Neurofence operator",
+  "Company admin": "Divyan Kavdia",
   "Platform admin": "Divyan Kavdia",
   "Security admin": "Mira Kapoor",
   "Governance owner": "Ishaan Patel",
@@ -148,7 +166,7 @@ export const initialSession: Session = {
   tenant: "acme",
   environment: "Development",
   region: "India",
-  role: "Platform admin",
+  role: "Company admin",
   user: users["Platform admin"],
 };
 
@@ -163,9 +181,13 @@ export const moduleMap: Record<string, string> = {
   incidents: "M9",
   assurance: "M7",
   governance: "M9",
+  company: "M9",
 };
 
 export const capabilities: Record<string, Role[]> = {
+  company: ["Company admin"],
+  companyReview: ["Security admin", "Company admin"],
+  companies: ["Neurofence operator"],
   providers: ["Platform admin", "Platform engineer"],
   projects: ["Platform admin", "Platform engineer", "Developer"],
   routes: ["Platform admin", "Platform engineer"],
@@ -188,7 +210,7 @@ export const capabilities: Record<string, Role[]> = {
   campaigns: ["Security admin", "Developer"],
   scans: ["Security admin", "Developer"],
   integrations: ["Platform admin"],
-  members: ["Platform admin"],
+  members: ["Company admin"],
   detectors: ["Security admin"],
   settings: ["Platform admin"],
   approval: ["Security admin"],
@@ -200,7 +222,7 @@ export const capabilities: Record<string, Role[]> = {
     "Agent owner",
   ],
   reveal: ["Security admin", "SOC analyst"],
-  savedViews: roles,
+  savedViews: roles.filter((role) => role !== "Neurofence operator"),
   evidenceExport: ["Security admin", "Governance owner", "Auditor"],
   evidence: ["Security admin", "Governance owner"],
   distribution: ["Platform admin", "Platform engineer"],
@@ -211,5 +233,22 @@ export const capabilities: Record<string, Role[]> = {
   models: ["Platform admin", "Platform engineer"],
 };
 
+for (const capability of [
+  "providers",
+  "models",
+  "projects",
+  "routes",
+  "budgets",
+  "agents",
+  "servers",
+  "integrations",
+  "settings",
+  "distribution",
+  "run",
+])
+  capabilities[capability].push("Company admin");
+
 export const can = (session: Session, capability: string) =>
-  (capabilities[capability] || []).includes(session.role);
+  session.permissions
+    ? session.permissions.includes(capability)
+    : (capabilities[capability] || []).includes(session.role);

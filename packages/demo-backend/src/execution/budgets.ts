@@ -89,6 +89,7 @@ export function evaluateBudget(
         const fingerprint = canonical({
           project: project.id,
           projectVersion: project.version,
+          companyConfigVersion: state.settings.companyConfigVersion || 1,
           budget: id,
           budgetVersion: budget.publishedVersion || budget.version,
           request: body,
@@ -137,6 +138,7 @@ export function budgetApproval(
   const fingerprint = canonical({
     project: project.id,
     projectVersion: project.version,
+    companyConfigVersion: state.settings.companyConfigVersion || 1,
     budget: budgetId,
     budgetVersion: budget.publishedVersion || budget.version,
     request: body,
@@ -183,6 +185,7 @@ export function consumeBudgetApprovals(
     const fingerprint = canonical({
       project: project.id,
       projectVersion: project.version,
+      companyConfigVersion: state.settings.companyConfigVersion || 1,
       budget: budget.id,
       budgetVersion: budget.publishedVersion || budget.version,
       request: body,

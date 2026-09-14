@@ -14,7 +14,10 @@ import { Store } from "./stores/store";
 export class MockBackend implements Transport {
   session = { ...initialSession };
   private queue = Promise.resolve();
-  private receipts = new Map<string, { payload: string; result: Result }>();
+  private receipts = new Map<
+    string,
+    { payload: string; result: Result; permissions: string[] }
+  >();
   constructor(
     private store: Store = new MemoryStore(),
     private latency = 80,

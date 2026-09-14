@@ -1,5 +1,19 @@
 export const navigation = [
   {
+    id: "company",
+    label: "Company administration",
+    icon: "people",
+    module: "M9",
+    tabs: [
+      "Overview",
+      "People & teams",
+      "Configuration",
+      "Access & identity",
+      "History & audit",
+      "Provisioning",
+    ],
+  },
+  {
     id: "overview",
     label: "Command center",
     icon: "grid",

@@ -27,6 +27,11 @@ import {
 } from "./budgets";
 import { inspect } from "./inspect";
 import { published } from "./policy";
+import {
+  companyModelAllowed,
+  companyPolicy,
+  companyRuntimeFailure,
+} from "../company/runtime";
 
 export async function runModel(
   providerConnector: ProviderConnector | undefined,
@@ -52,6 +57,8 @@ export async function runModel(
   };
   const distributionError = distributionFailure(state);
   if (distributionError) return deny(distributionError);
+  const companyError = companyRuntimeFailure(state, project);
+  if (companyError) return deny(companyError);
   const agent = body.agent ? find("agents", str(body.agent)) : undefined;
   if (agent) {
     trace.agent = agent.id;
@@ -77,9 +84,12 @@ export async function runModel(
   if (project.status !== "Active" || project.keyStatus !== "Active")
     return deny("Application or virtual credential is inactive");
   stage("Identity", `${project.name} · ${session.user}`);
-  const policy = published(
-      find("policies", str(project.policy)),
-      state.data.traces.length,
+  const policy = companyPolicy(
+      state,
+      published(
+        find("policies", str(project.policy)),
+        state.data.traces.length,
+      ),
     ),
     route = published(
       find("routes", str(project.route)),
@@ -125,6 +135,7 @@ export async function runModel(
     const p = state.data.providers.find((p) => p.id === id);
     return (
       p &&
+      companyModelAllowed(state, id) &&
       p.status === "Healthy" &&
       state.data.models.some(
         (m) => m.provider === id && m.status === "Approved",
@@ -170,7 +181,10 @@ export async function runModel(
         : round(
             Math.max(0.01, (maxTokens / 1000) * (id === fallback ? 0.35 : 0.9)),
           ),
-      check = evaluateBudget(state, project, cost, body);
+      companyBudget = companyRuntimeFailure(state, project, cost),
+      check = companyBudget
+        ? { ok: false, reason: companyBudget, decision: "DENY" }
+        : evaluateBudget(state, project, cost, body);
     if (check.ok) {
       if (check.route && check.route !== id) {
         if (eligible(check.route) && !candidates.includes(check.route))
